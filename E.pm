@@ -30,7 +30,7 @@ sub import {
     my $class = shift;
     my $caller = caller;
 
-    feature->import(':5.10', 'unicode_strings');
+    feature->import(':5.10');
     $Data::Dumper::Sortkeys = 1;
 
     no strict 'refs';
