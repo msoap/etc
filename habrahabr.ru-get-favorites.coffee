@@ -17,12 +17,12 @@ get_favorites_from_page = (address, result, on_complete_result) ->
         done: (errors, window) ->
             $ = window.jQuery
 
-            window.jQuery('h1.title a.post_title').each (i, el) ->
+            $('h1.title a.post_title').each (i, el) ->
                 result.push
                     title: el.textContent
                     href: el.href
 
-            next_page = window.jQuery('div.page-nav > ul > li a[id=next_page]')
+            next_page = $('div.page-nav > ul > li a[id=next_page]')
             if next_page.length > 0
                 get_favorites_from_page next_page[0].href, result, on_complete_result
             else
