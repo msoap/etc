@@ -25,12 +25,14 @@ use JSON            qw/from_json to_json/;
 use File::Slurp     qw/read_file write_file/;
 use LWP::Simple     qw/get head getprint getstore/;
 use Data::Dumper    qw/Dumper/;
+use Data::Printer;
+use open ":std" => ":utf8";
 
 sub import {
     my $class = shift;
     my $caller = caller;
 
-    feature->import(':5.10');
+    feature->import(':5.10', 'unicode_strings');
     $Data::Dumper::Sortkeys = 1;
 
     no strict 'refs';
@@ -42,14 +44,14 @@ sub import {
         from_json to_json
         read_file write_file
         get head getprint getstore
-        Dumper
+        Dumper p
     /;
 
     for my $func (@func_export) {
         *{$caller . "::$func"} = \&$func;
     }
 
-    *{$caller . "::p"} = sub {
+    *{$caller . "::d"} = sub {
         print Dumper(1 == scalar @_ ? $_[0] : \@_);
     };
 
