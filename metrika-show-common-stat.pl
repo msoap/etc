@@ -11,8 +11,10 @@ use API from: http://api.yandex.com/metrika/
     metrika-show-common-stat.pl options
       --token=XXXXX       -- OAuth totken, required
       --counter-id=NNNNN  -- counter ID, required
-      --days=N            -- show stat for last N days
+      --days=N            -- show stat for last N days (default is 7 days)
       --short             -- show short stat, only visits and visitors
+
+    or read config from ~/.config/metrika-show-common-stat.cfg
 
 =cut
 
@@ -32,28 +34,40 @@ our $base_url = "https://api-metrika.yandex.com/%s.json?id=%s&pretty=1&oauth_tok
 
 # ------------------------------------------------------------------------------
 sub main {
-    my ($token, $counter_id, $days_ago, $is_short);
+    my $config = {days => 7};
+
+    my $config_filename = "$ENV{HOME}/.config/metrika-show-common-stat.cfg";
+    if (-f $config_filename && -r $config_filename) {
+        open my $FH, '<', $config_filename or die "Error open file: $!\n";
+        for my $row (<$FH>) {
+            next if $row =~ /^\s*#/;
+            chomp $row;
+            my ($k, $v) = split /\s*=\s*/, $row, 2;
+            $config->{$k} = $v;
+        }
+        close $FH;
+    }
+
     GetOptions(
-        'token=s' => \$token,
-        'counter-id=i' => \$counter_id,
-        'days=i' => \$days_ago,
-        'short' => \$is_short,
+        'token=s' => \$config->{token},
+        'counter-id=i' => \$config->{'counter-id'},
+        'days=i' => \$config->{days},
+        'short' => \$config->{short},
         'help' => sub {
             print "$0 --token=XXXXX --counter-id=NNNNN [--days=N --short --help]\n";
             exit 0;
         }
     );
 
-    $days_ago //= 7;
-    die("need --token and --counter-id options\n") unless defined $token && defined $counter_id;
+    die("need --token and --counter-id options\n") unless defined $config->{token} && defined $config->{'counter-id'};
 
-    for my $day (reverse 0 .. $days_ago) {
+    for my $day (reverse 0 .. $config->{days}) {
         my $date_param = strftime("%Y%m%d", localtime(time() - $day * 3600 * 24));
         my $date = strftime("%Y-%m-%d (%a)", localtime(time() - $day * 3600 * 24));
 
         my $get_stat = sub($) {
             my $type = shift;
-            return get_stat($type, $date_param, $counter_id, $token);
+            return get_stat($type, $date_param, $config->{'counter-id'}, $config->{token});
         };
 
         print colored($date, "yellow") . "\n";
@@ -70,7 +84,7 @@ sub main {
         print format_val('new visitors' => $new_visitors) . ' ';
         print format_val('visits' => $visits);
 
-        if ($is_short) {
+        if ($config->{short}) {
             print "\n";
             next;
         }
