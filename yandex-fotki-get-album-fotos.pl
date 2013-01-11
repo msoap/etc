@@ -41,7 +41,6 @@ sub get_urls_from_rss {
                    && $rss->{channel}->[0]->{"atom:link"}->[0]
                    && $rss->{channel}->[0]->{"atom:link"}->[0]->{rel}
                    && $rss->{channel}->[0]->{"atom:link"}->[0]->{rel} eq 'next'
-                   && $rss->{channel}->[0]->{"atom:link"}->[0]->{rel} eq 'next'
                ? $rss->{channel}->[0]->{"atom:link"}->[0]->{href}
                : undef;
 
