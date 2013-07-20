@@ -12,7 +12,7 @@ console.log "habrahabr.ru favorites for #{habr_user_name}"
 # ------------------------------------------------------------------
 get_favorites_from_page = (address, result, on_complete_result) ->
     Jsdom.env
-        html: address
+        url: address
         scripts: ["http://code.jquery.com/jquery-2.0.0.min.js"]
         done: (errors, window) ->
             $ = window.jQuery
