@@ -20,6 +20,7 @@ use API from: http://api.yandex.com/metrika/
 
 use strict;
 use warnings;
+use v5.10.0;
 
 use Getopt::Long;
 use LWP::Simple;
@@ -30,15 +31,16 @@ use Term::ANSIColor;
 use utf8;
 use open ":std" => ":utf8";
 
-our $base_url = "https://api-metrika.yandex.com/%s.json?id=%s&pretty=1&oauth_token=%s&date1=%s&date2=%s";
+our $BASE_URL = "https://api-metrika.yandex.com/%s.json?id=%s&pretty=1&oauth_token=%s&date1=%s&date2=%s";
+our $CONFIG_FILENAME = "$ENV{HOME}/.config/metrika-show-common-stat.cfg";
+our $DEFAULT_DAYS = 7;
 
 # ------------------------------------------------------------------------------
 sub main {
-    my $config = {days => 7};
+    my $config = {days => $DEFAULT_DAYS};
 
-    my $config_filename = "$ENV{HOME}/.config/metrika-show-common-stat.cfg";
-    if (-f $config_filename && -r $config_filename) {
-        open my $FH, '<', $config_filename or die "Error open file: $!\n";
+    if (-f $CONFIG_FILENAME && -r $CONFIG_FILENAME) {
+        open my $FH, '<', $CONFIG_FILENAME or die "Error open file: $!\n";
         for my $row (<$FH>) {
             next if $row =~ /^\s*#/;
             chomp $row;
@@ -73,8 +75,13 @@ sub main {
         print colored($date, "yellow") . "\n";
 
         my $stat = $get_stat->('stat/traffic/summary');
-        if (exists $stat->{errors} && $stat->{errors}->[0]->{code} eq 'ERR_NO_DATA') {
-            print "  -- no data --\n";
+        if (exists $stat->{errors} && $stat->{errors}->[0]->{code}) {
+            printf "  -- %s --\n",
+                   {'ERR_NO_DATA' => "no visits",
+                    'ERR_NO_NET'  => "network priblem",
+                    'ERR_JSON'    => "json parsing error",
+                   }->{ $stat->{errors}->[0]->{code} }
+                   || "error: " . $stat->{errors}->[0]->{code};
             next;
         }
 
@@ -120,8 +127,13 @@ sub main {
 sub get_stat($$$$) {
     my ($type, $date, $counter_id, $token) = @_;
 
-    my $url = sprintf($base_url, $type, $counter_id, $token, $date, $date);
+    my $url = sprintf($BASE_URL, $type, $counter_id, $token, $date, $date);
     my $json = get($url);
+    return {errors => [{code => 'ERR_NO_NET'}]} unless $json;
+
+    my $stat = eval {from_json($json)};
+    return {errors => [{code => 'ERR_JSON'}]} unless ref($stat) eq 'HASH';
+
     return from_json($json);
 }
 
