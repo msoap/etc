@@ -2,9 +2,15 @@
 
 =head1 NAME
 
-metrika-show-common-stat.pl - show common statistic from Yandex.metrika for last 7 days
+metrika-show-common-stat.pl
 
-use API from: http://api.yandex.com/metrika/
+=head1 DESCRIPTION
+
+Show common statistic from Yandex.metrika
+
+uses API from: http://api.yandex.com/metrika/
+
+install from: https://gist.github.com/msoap/3772872
 
 =head1 SYNOPSIS
 
