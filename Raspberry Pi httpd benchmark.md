@@ -1,16 +1,23 @@
 Raspberry Pi httpd benchmark
 ============================
 
+Total RPS
+---------
+
+                     Nginx: 173.8 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                   Node.js:  98.6 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                        Go:  81.2 ■■■■■■■■■■■■■■■■■■■■■■■
+                    Python:  78.6 ■■■■■■■■■■■■■■■■■■■■■■
+    Perl with HTTP::Daemon:  62.6 ■■■■■■■■■■■■■■■■■
+     Perl with Mojolicious:   8.4 ■■
+
+####Create chart:
+
+    cat Raspberry*.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat} $lang = $1 if /^##(\w.+)$/; if (/Requests per second:\s+(\d+\.\d+)/) {$stat{$lang} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%22s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 3.5)}}'
+
+####ab command line
+
     ab -r -n 1000 http://raspberrypi.local:8080/
-
-Languages/servers
-
-  * Nginx
-  * Node.js
-  * Go
-  * Python
-  * Perl with HTTP::Daemon
-  * Perl with Mojolicious
 
 ##Nginx
 
@@ -271,18 +278,3 @@ v0.10.16
       98%     21
       99%     24
      100%     70 (longest request)
-
-Total
------
-Create chart:
-
-    cat Raspberry*.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat} $lang = $1 if /^##(\w.+)$/; if (/Requests per second:\s+(\d+\.\d+)/) {$stat{$lang} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%22s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 3.5)}}'
-
-RPS:
-
-                     Nginx: 173.8 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                   Node.js:  98.6 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                        Go:  81.2 ■■■■■■■■■■■■■■■■■■■■■■■
-                    Python:  78.6 ■■■■■■■■■■■■■■■■■■■■■■
-    Perl with HTTP::Daemon:  62.6 ■■■■■■■■■■■■■■■■■
-     Perl with Mojolicious:   8.4 ■■
