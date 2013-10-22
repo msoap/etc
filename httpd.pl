@@ -15,7 +15,7 @@ sub main {
         while (my $r = $c->get_request) {
             if ($r->method eq 'GET' and $r->uri->path eq "/") {
                 my $res = HTTP::Response->new(RC_OK);
-                $res->content("Hello World from perl HTTP::Daemon\n");
+                $res->content("Hello World from perl with HTTP::Daemon\n");
                 $res->content_type('text/plain');
                 $c->send_response($res);
             } else {
