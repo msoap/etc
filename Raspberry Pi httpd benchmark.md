@@ -4,16 +4,18 @@ Raspberry Pi httpd benchmark
 Total RPS
 ---------
 
-                     Nginx: 173.8 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                   Node.js:  98.6 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                        Go:  81.2 ■■■■■■■■■■■■■■■■■■■■■■■
-                    Python:  78.6 ■■■■■■■■■■■■■■■■■■■■■■
-    Perl with HTTP::Daemon:  62.6 ■■■■■■■■■■■■■■■■■
-     Perl with Mojolicious:   8.4 ■■
+                        Nginx: 173.8 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                      Node.js:  98.6 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                           Go:  81.2 ■■■■■■■■■■■■■■■■■■■■■■■
+                       Python:  78.6 ■■■■■■■■■■■■■■■■■■■■■■
+    Perl/HTTP::Server::Simple:  67.0 ■■■■■■■■■■■■■■■■■■■
+            Perl/HTTP::Daemon:  62.6 ■■■■■■■■■■■■■■■■■
+                  Perl/Dancer:  19.1 ■■■■■
+             Perl/Mojolicious:   8.4 ■■
 
 ####Create chart:
 
-    cat Raspberry*.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat} $lang = $1 if /^##(\w.+)$/; if (/Requests per second:\s+(\d+\.\d+)/) {$stat{$lang} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%22s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 3.5)}}'
+    cat Raspberry*.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat} $lang = $1 if /^##(\w.+)$/; if (/Requests per second:\s+(\d+\.\d+)/) {$stat{$lang} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%27s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 3.5)}}'
 
 ####ab command line
 
@@ -109,7 +111,7 @@ With one small html file
       99%    199
      100%    281 (longest request)
 
-##Perl with Mojolicious
+##Perl/Mojolicious
 
 ###run
 
@@ -154,7 +156,7 @@ With one small html file
       99%    157
      100%    209 (longest request)
 
-##Perl with HTTP::Daemon
+##Perl/HTTP::Daemon
 
 ###ab result
 
@@ -194,6 +196,92 @@ With one small html file
       98%     26
       99%     28
      100%    136 (longest request)
+
+
+##Perl/Dancer
+
+###ab result
+
+     Server Software:        Perl
+     Server Hostname:        192.168.1.7
+     Server Port:            8080
+
+     Document Path:          /
+     Document Length:        0 bytes
+
+     Concurrency Level:      1
+     Time taken for tests:   52.489 seconds
+     Complete requests:      1000
+     Failed requests:        1496
+        (Connect: 0, Receive: 497, Length: 999, Exceptions: 0)
+     Write errors:           503
+     Total transferred:      158841 bytes
+     HTML transferred:       32967 bytes
+     Requests per second:    19.05 [#/sec] (mean)
+     Time per request:       52.489 [ms] (mean)
+     Time per request:       52.489 [ms] (mean, across all concurrent requests)
+     Transfer rate:          2.96 [Kbytes/sec] received
+
+     Connection Times (ms)
+                   min  mean[+/-sd] median   max
+     Connect:       41   52  41.2     50    1294
+     Processing:     0    0   0.0      0       0
+     Waiting:        0    0   0.0      0       0
+     Total:         41   52  41.2     50    1294
+
+     Percentage of the requests served within a certain time (ms)
+       50%     50
+       66%     51
+       75%     52
+       80%     53
+       90%     55
+       95%     56
+       98%     59
+       99%    159
+      100%   1294 (longest request)
+
+##Perl/HTTP::Server::Simple
+
+###ab result
+
+     Server Software:        Simple
+     Server Hostname:        192.168.1.7
+     Server Port:            8080
+
+     Document Path:          /
+     Document Length:        42 bytes
+
+     Concurrency Level:      1
+     Time taken for tests:   14.937 seconds
+     Complete requests:      1000
+     Failed requests:        0
+     Write errors:           0
+     Total transferred:      106000 bytes
+     HTML transferred:       42000 bytes
+     Requests per second:    66.95 [#/sec] (mean)
+     Time per request:       14.937 [ms] (mean)
+     Time per request:       14.937 [ms] (mean, across all concurrent requests)
+     Transfer rate:          6.93 [Kbytes/sec] received
+
+     Connection Times (ms)
+                   min  mean[+/-sd] median   max
+     Connect:        1    2   3.5      2      90
+     Processing:    11   13   0.6     12      17
+     Waiting:       11   12   0.6     12      17
+     Total:         13   15   3.6     14     104
+     WARNING: The median and mean for the processing time are not within a normal deviation
+             These results are probably not that reliable.
+
+     Percentage of the requests served within a certain time (ms)
+       50%     14
+       66%     15
+       75%     15
+       80%     15
+       90%     16
+       95%     16
+       98%     17
+       99%     18
+      100%    104 (longest request)
 
 ##Node.js
 
@@ -282,8 +370,10 @@ v0.10.16
 RPS on Macbook Air
 ------------------
 
-                   Go: 3828 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-              Node.js: 3126 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-    Perl HTTP::Daemon: 1859 ■■■■■■■■■■■■■■■■■■■■■■■■■■
-               Python: 1565 ■■■■■■■■■■■■■■■■■■■■■■
-     Perl Mojolicious:  143 ■■
+                           Go: 3828 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                      Node.js: 3126 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+            Perl/HTTP::Daemon: 1859 ■■■■■■■■■■■■■■■■■■■■■■■■■■
+                       Python: 1565 ■■■■■■■■■■■■■■■■■■■■■■
+    Perl/HTTP::Server::Simple: 1442 ■■■■■■■■■■■■■■■■■■■■
+                  Perl/Dancer:  452 ■■■■■■
+             Perl/Mojolicious:  303 ■■■■
