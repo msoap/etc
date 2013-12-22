@@ -5,8 +5,8 @@ Total RPS
 ---------
 
                         Nginx: 173.8 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                           Go: 143.1 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
                       Node.js:  98.6 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                           Go:  81.2 ■■■■■■■■■■■■■■■■■■■■■■■
                        Python:  78.6 ■■■■■■■■■■■■■■■■■■■■■■
     Perl/HTTP::Server::Simple:  67.0 ■■■■■■■■■■■■■■■■■■■
             Perl/HTTP::Daemon:  62.6 ■■■■■■■■■■■■■■■■■
@@ -66,9 +66,10 @@ With one small html file
 
 ##Go
 
+go version go1.2 linux/arm
+
 ###run
 
-    export GOARM=5
     go build httpd.go
     ./httpd
 
@@ -82,34 +83,34 @@ With one small html file
     Document Length:        19 bytes
 
     Concurrency Level:      1
-    Time taken for tests:   12.312 seconds
+    Time taken for tests:   6.990 seconds
     Complete requests:      1000
     Failed requests:        0
     Write errors:           0
-    Total transferred:      116000 bytes
+    Total transferred:      136000 bytes
     HTML transferred:       19000 bytes
-    Requests per second:    81.22 [#/sec] (mean)
-    Time per request:       12.312 [ms] (mean)
-    Time per request:       12.312 [ms] (mean, across all concurrent requests)
-    Transfer rate:          9.20 [Kbytes/sec] received
+    Requests per second:    143.07 [#/sec] (mean)
+    Time per request:       6.990 [ms] (mean)
+    Time per request:       6.990 [ms] (mean, across all concurrent requests)
+    Transfer rate:          19.00 [Kbytes/sec] received
 
     Connection Times (ms)
                   min  mean[+/-sd] median   max
-    Connect:        1    2   2.8      2      63
-    Processing:     4   10  29.0      5     279
-    Waiting:        4   10  29.0      5     279
-    Total:          6   12  29.1      7     281
+    Connect:        1    2   4.1      2     103
+    Processing:     3    5   1.6      4      14
+    Waiting:        3    4   1.3      4      13
+    Total:          4    7   4.5      6     110
 
     Percentage of the requests served within a certain time (ms)
-      50%      7
-      66%      7
+      50%      6
+      66%      8
       75%      8
       80%      8
-      90%     10
-      95%     14
-      98%    189
-      99%    199
-     100%    281 (longest request)
+      90%      9
+      95%     10
+      98%     12
+      99%     14
+     100%    110 (longest request)
 
 ##Perl/Mojolicious
 
