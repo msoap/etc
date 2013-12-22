@@ -11,7 +11,7 @@ Total RPS
     Perl/HTTP::Server::Simple:  67.0 ■■■■■■■■■■■■■■■■■■■
             Perl/HTTP::Daemon:  62.6 ■■■■■■■■■■■■■■■■■
                   Perl/Dancer:  19.1 ■■■■■
-             Perl/Mojolicious:   8.4 ■■
+             Perl/Mojolicious:  10.4 ■■
 
 ####Create chart:
 
