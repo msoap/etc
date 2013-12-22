@@ -125,37 +125,37 @@ go version go1.2 linux/arm
     Server Port:            8080
 
     Document Path:          /
-    Document Length:        28 bytes
+    Document Length:        38 bytes
 
     Concurrency Level:      1
-    Time taken for tests:   118.832 seconds
+    Time taken for tests:   96.270 seconds
     Complete requests:      1000
     Failed requests:        0
     Write errors:           0
-    Total transferred:      190000 bytes
-    HTML transferred:       28000 bytes
-    Requests per second:    8.42 [#/sec] (mean)
-    Time per request:       118.832 [ms] (mean)
-    Time per request:       118.832 [ms] (mean, across all concurrent requests)
-    Transfer rate:          1.56 [Kbytes/sec] received
+    Total transferred:      200000 bytes
+    HTML transferred:       38000 bytes
+    Requests per second:    10.39 [#/sec] (mean)
+    Time per request:       96.270 [ms] (mean)
+    Time per request:       96.270 [ms] (mean, across all concurrent requests)
+    Transfer rate:          2.03 [Kbytes/sec] received
 
     Connection Times (ms)
                   min  mean[+/-sd] median   max
-    Connect:        2    2   2.8      2      63
-    Processing:   104  116   9.2    114     204
-    Waiting:      102  114   8.3    112     202
-    Total:        106  119   9.7    116     209
+    Connect:        2    3   4.7      2     124
+    Processing:    90   93   4.1     93     194
+    Waiting:       89   92   2.4     91     115
+    Total:         92   96   6.3     95     220
 
     Percentage of the requests served within a certain time (ms)
-      50%    116
-      66%    121
-      75%    125
-      80%    126
-      90%    128
-      95%    132
-      98%    138
-      99%    157
-     100%    209 (longest request)
+      50%     95
+      66%     96
+      75%     97
+      80%     97
+      90%     99
+      95%    102
+      98%    105
+      99%    111
+     100%    220 (longest request)
 
 ##Perl/HTTP::Daemon
 
