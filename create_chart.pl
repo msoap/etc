@@ -14,8 +14,8 @@ sub main {
     system("go build test_memory.go");
 
     my $stat = {};
-    for my $type (qw/test_int_key test_string_key test_slice_of_string test_slice_of_int/) {
-        for my $nums (qw/10 100 300 500 700 1000 1500/) {
+    for my $type (qw/map_int_key_of_string map_string_key_of_string slice_of_string slice_of_int/) {
+        for my $nums (qw/500 700 1000 1500/) {
             for my $lang (qw/perl go/) {
                 my $exe = $lang eq 'perl'
                    ? 'perl ./test_memory.pl'
@@ -33,11 +33,11 @@ sub main {
     }
     print "----------------------\n";
 
-    for my $type (keys %$stat) {
-        printf "%s:\n", {test_int_key => '{int}->{int} = string'
-                         , test_string_key => '{string}->{string} = string'
-                         , test_slice_of_string => '[int]->[int] = string'
-                         , test_slice_of_int => '[int]->[int] = int'
+    for my $type (sort keys %$stat) {
+        printf "%s:\n", {map_int_key_of_string => '{int}->{int} = string'
+                         , map_string_key_of_string => '{string}->{string} = string'
+                         , slice_of_string => '[int]->[int] = string'
+                         , slice_of_int => '[int]->[int] = int'
                         }->{$type};
         print "  lang (keys² q-ty): MB of memory\n";
         for my $nums (sort {$b <=> $a} keys %{$stat->{$type}}) {

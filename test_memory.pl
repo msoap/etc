@@ -8,11 +8,13 @@ use Data::Dumper;
 our $NUMS = 1500;
 
 # --------------------------------------------------------------------
-sub test_string_key {
+sub test_map_string_key_of_string {
+    my $name = shift;
     my $nums = shift;
+    print "Start $name\n";
+
     my $hash = {};
 
-    print "Start hash string keys\n";
     for (my $i = 0; $i < $nums; $i++) {
         $hash->{"key_" . $i} = {};
 
@@ -24,11 +26,13 @@ sub test_string_key {
 }
 
 # --------------------------------------------------------------------
-sub test_int_key {
+sub test_map_int_key_of_string {
+    my $name = shift;
     my $nums = shift;
+    print "Start $name\n";
+
     my $hash = {};
 
-    print "Start hash int keys\n";
     for (my $i = 0; $i < $nums; $i++) {
         $hash->{$i} = {};
 
@@ -41,8 +45,9 @@ sub test_int_key {
 
 # --------------------------------------------------------------------
 sub test_slice_of_string {
+    my $name = shift;
     my $nums = shift;
-    print "Start slice of string\n";
+    print "Start $name\n";
 
     my $array = [];
     for (my $i = 0; $i < $nums; $i++) {
@@ -56,8 +61,9 @@ sub test_slice_of_string {
 
 # --------------------------------------------------------------------
 sub test_slice_of_int {
+    my $name = shift;
     my $nums = shift;
-    print "Start slice of int\n";
+    print "Start $name\n";
 
     my $array = [];
     for (my $i = 0; $i < $nums; $i++) {
@@ -75,10 +81,10 @@ sub main {
     print "nums: $nums\n";
 
     my $test_functions = {
-        test_int_key => \&test_int_key
-        , test_string_key => \&test_string_key
-        , test_slice_of_string => \&test_slice_of_string
-        , test_slice_of_int => \&test_slice_of_int
+        map_int_key_of_string => \&test_map_int_key_of_string
+        , map_string_key_of_string => \&test_map_string_key_of_string
+        , slice_of_string => \&test_slice_of_string
+        , slice_of_int => \&test_slice_of_int
     };
 
     if ($ARGV[0]
@@ -86,7 +92,7 @@ sub main {
         && defined $test_functions->{$ARGV[0]}
        )
     {
-        $test_functions->{$ARGV[0]}->($nums);
+        $test_functions->{$ARGV[0]}->($ARGV[0], $nums);
     } else {
         printf("usage: $0 %s [NUMS]\n", join("|", keys %$test_functions));
         return;
