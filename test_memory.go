@@ -50,8 +50,8 @@ func test_int_key(nums int) interface{} {
 }
 
 //------------------------------------
-func test_slice(nums int) interface{} {
-    fmt.Println("Start slice")
+func test_slice_of_string(nums int) interface{} {
+    fmt.Println("Start slice of string")
 
     var array = make([][]string, nums)
 
@@ -60,6 +60,24 @@ func test_slice(nums int) interface{} {
 
         for j := 0; j < nums; j++ {
             array[i][j] = "string_" + fmt.Sprintf("%d", i) + "_" + fmt.Sprintf("%d", j)
+        }
+    }
+
+    fmt.Println("Finish")
+    return array
+}
+
+//------------------------------------
+func test_slice_of_int(nums int) interface{} {
+    fmt.Println("Start slice of int")
+
+    var array = make([][]int, nums)
+
+    for i := 0; i < nums; i++ {
+        array[i] = make([]int, nums)
+
+        for j := 0; j < nums; j++ {
+            array[i][j] = i * nums + j
         }
     }
 
@@ -114,7 +132,8 @@ func main() {
 
     test_functions := map[string]func(int)interface{}{"test_int_key": test_int_key,
                                                       "test_string_key": test_string_key,
-                                                      "test_slice": test_slice,
+                                                      "test_slice_of_string": test_slice_of_string,
+                                                      "test_slice_of_int": test_slice_of_int,
                                                       "test_array": test_array}
 
     var result interface{}

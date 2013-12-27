@@ -40,14 +40,29 @@ sub test_int_key {
 }
 
 # --------------------------------------------------------------------
-sub test_slice {
+sub test_slice_of_string {
     my $nums = shift;
-    print "Start slice\n";
+    print "Start slice of string\n";
 
     my $array = [];
     for (my $i = 0; $i < $nums; $i++) {
         for (my $j = 0; $j < $nums; $j++) {
             $array->[$i]->[$j] = "string_${i}_${j}";
+        }
+    }
+
+    print "Finish\n";
+}
+
+# --------------------------------------------------------------------
+sub test_slice_of_int {
+    my $nums = shift;
+    print "Start slice of int\n";
+
+    my $array = [];
+    for (my $i = 0; $i < $nums; $i++) {
+        for (my $j = 0; $j < $nums; $j++) {
+            $array->[$i]->[$j] = $i * $nums + $j;
         }
     }
 
@@ -62,7 +77,8 @@ sub main {
     my $test_functions = {
         test_int_key => \&test_int_key
         , test_string_key => \&test_string_key
-        , test_slice => \&test_slice
+        , test_slice_of_string => \&test_slice_of_string
+        , test_slice_of_int => \&test_slice_of_int
     };
 
     if ($ARGV[0]
