@@ -44,6 +44,42 @@ sub test_map_int_key_of_string {
 }
 
 # --------------------------------------------------------------------
+sub test_map_string_key_of_int {
+    my $name = shift;
+    my $nums = shift;
+    print "Start $name\n";
+
+    my $hash = {};
+
+    for (my $i = 0; $i < $nums; $i++) {
+        $hash->{"key_" . $i} = {};
+
+        for (my $j = 0; $j < $nums; $j++) {
+            $hash->{"key_" . $i}->{"key_j_" . $j} = $i * $nums + $j;
+        }
+    }
+    print "Finish\n";
+}
+
+# --------------------------------------------------------------------
+sub test_map_int_key_of_int {
+    my $name = shift;
+    my $nums = shift;
+    print "Start $name\n";
+
+    my $hash = {};
+
+    for (my $i = 0; $i < $nums; $i++) {
+        $hash->{$i} = {};
+
+        for (my $j = 0; $j < $nums; $j++) {
+            $hash->{$i}->{$j} = $i * $nums + $j;
+        }
+    }
+    print "Finish\n";
+}
+
+# --------------------------------------------------------------------
 sub test_slice_of_string {
     my $name = shift;
     my $nums = shift;
@@ -83,6 +119,8 @@ sub main {
     my $test_functions = {
         map_int_key_of_string => \&test_map_int_key_of_string
         , map_string_key_of_string => \&test_map_string_key_of_string
+        , map_string_key_of_int => \&test_map_string_key_of_int
+        , map_int_key_of_int => \&test_map_int_key_of_int
         , slice_of_string => \&test_slice_of_string
         , slice_of_int => \&test_slice_of_int
     };

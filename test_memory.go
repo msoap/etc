@@ -50,6 +50,44 @@ func test_map_int_key_of_string(name string, nums int) interface{} {
 }
 
 //------------------------------------
+func test_map_string_key_of_int(name string, nums int) interface{} {
+    fmt.Println("Start", name)
+
+    var hash = make(map[string]map[string]int, nums)
+
+    for i := 0; i < nums; i++ {
+        str_i := fmt.Sprintf("%d", i)
+        hash["key_"+str_i] = make(map[string]int, nums)
+
+        for j := 0; j < nums; j++ {
+            str_j := fmt.Sprintf("%d", j)
+            hash["key_"+str_i]["key_j_"+str_j] = i * nums + j
+        }
+    }
+
+    fmt.Println("Finish")
+    return hash
+}
+
+//------------------------------------
+func test_map_int_key_of_int(name string, nums int) interface{} {
+    fmt.Println("Start", name)
+
+    var hash = make(map[int]map[int]int, nums)
+
+    for i := 0; i < nums; i++ {
+        hash[i] = make(map[int]int, nums)
+
+        for j := 0; j < nums; j++ {
+            hash[i][j] = i * nums + j
+        }
+    }
+
+    fmt.Println("Finish")
+    return hash
+}
+
+//------------------------------------
 func test_slice_of_string(name string, nums int) interface{} {
     fmt.Println("Start", name)
 
@@ -132,6 +170,8 @@ func main() {
 
     test_functions := map[string]func(string, int)interface{}{"map_int_key_of_string": test_map_int_key_of_string,
                                                               "map_string_key_of_string": test_map_string_key_of_string,
+                                                              "map_int_key_of_int": test_map_int_key_of_int,
+                                                              "map_string_key_of_int": test_map_string_key_of_int,
                                                               "slice_of_string": test_slice_of_string,
                                                               "slice_of_int": test_slice_of_int,
                                                               "array": test_array}
