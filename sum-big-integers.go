@@ -22,7 +22,7 @@ func main() {
 	sum := new(big.Int)
 
 	for _, integer_str := range re.FindAllString(string(stdin), -1) {
-		fmt.Sscan(integer_str, i)
+		i.SetString(integer_str, 10)
 		sum.Add(sum, i)
 	}
 	fmt.Println(sum)
