@@ -1,18 +1,17 @@
 #!/usr/bin/env coffee
 
-# get user favorites from habrahabr.ru
+# get user favorites from habrahabr.ru and geektimes.ru
 
 Jsdom = require "jsdom"
 
-habrahabr_host = "http://habrahabr.ru"
-habr_user_name = process.argv[2] || process.env.USER
-
-console.log "habrahabr.ru favorites for #{habr_user_name}"
+HABRAHABR_HOSTS = ["http://habrahabr.ru", "http://geektimes.ru"]
+HABR_USER_NAME = process.argv[2] || process.env.USER
 
 # ------------------------------------------------------------------
-get_favorites_from_page = (address, result, on_complete_result) ->
-    Jsdom.env
-        url: address
+get_favorites_from_page = (habrahabr_host, favorites_url, result, on_complete_result) ->
+	favorites_url = "#{habrahabr_host}/users/#{HABR_USER_NAME}/favorites/" if favorites_url == ""
+	Jsdom.env
+        url: favorites_url
         scripts: ["http://code.jquery.com/jquery-2.0.3.min.js"]
         done: (errors, window) ->
             $ = window.jQuery
@@ -24,11 +23,14 @@ get_favorites_from_page = (address, result, on_complete_result) ->
 
             next_page = $('div.page-nav > ul > li a[id=next_page]')
             if next_page.length > 0
-                get_favorites_from_page next_page[0].href, result, on_complete_result
+                get_favorites_from_page habrahabr_host, next_page[0].href, result, on_complete_result
             else
-                on_complete_result result
+                on_complete_result habrahabr_host, result
 
 # ------------------------------------------------------------------
-get_favorites_from_page "#{habrahabr_host}/users/#{habr_user_name}/favorites/", [], (result) ->
-    result.reverse().map (row) ->
-        console.log "#{row.href} #{row.title}"
+for habrahabr_host in HABRAHABR_HOSTS
+	get_favorites_from_page habrahabr_host, "", [], (result_host, result) ->
+		console.log "#{result_host} favorites for #{HABR_USER_NAME}:"
+		result.reverse().map (row) ->
+	        console.log "#{row.href} #{row.title}"
+		console.log	""
