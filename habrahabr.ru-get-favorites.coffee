@@ -9,8 +9,8 @@ HABR_USER_NAME = process.argv[2] || process.env.USER
 
 # ------------------------------------------------------------------
 get_favorites_from_page = (habrahabr_host, favorites_url, result, on_complete_result) ->
-	favorites_url = "#{habrahabr_host}/users/#{HABR_USER_NAME}/favorites/" if favorites_url == ""
-	Jsdom.env
+    favorites_url = "#{habrahabr_host}/users/#{HABR_USER_NAME}/favorites/" if favorites_url == ""
+    Jsdom.env
         url: favorites_url
         scripts: ["http://code.jquery.com/jquery-2.1.3.min.js"]
         done: (errors, window) ->
@@ -29,8 +29,8 @@ get_favorites_from_page = (habrahabr_host, favorites_url, result, on_complete_re
 
 # ------------------------------------------------------------------
 for habrahabr_host in HABRAHABR_HOSTS
-	get_favorites_from_page habrahabr_host, "", [], (result_host, result) ->
-		console.log "#{result_host} favorites for #{HABR_USER_NAME}:"
-		result.reverse().map (row) ->
-	        console.log "#{row.href} #{row.title}"
-		console.log	""
+    get_favorites_from_page habrahabr_host, "", [], (result_host, result) ->
+        console.log "#{result_host} favorites for #{HABR_USER_NAME}:"
+        result.reverse().map (row) ->
+            console.log "#{row.href} #{row.title}"
+        console.log ""
