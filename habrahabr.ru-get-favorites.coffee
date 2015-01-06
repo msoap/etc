@@ -12,7 +12,7 @@ get_favorites_from_page = (habrahabr_host, favorites_url, result, on_complete_re
 	favorites_url = "#{habrahabr_host}/users/#{HABR_USER_NAME}/favorites/" if favorites_url == ""
 	Jsdom.env
         url: favorites_url
-        scripts: ["http://code.jquery.com/jquery-2.0.3.min.js"]
+        scripts: ["http://code.jquery.com/jquery-2.1.3.min.js"]
         done: (errors, window) ->
             $ = window.jQuery
 
