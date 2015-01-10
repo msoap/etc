@@ -66,10 +66,22 @@ func main() {
 	}()
 
 	go func() {
-		// dont work because SSL :(
-		err := http.ListenAndServe("127.0.0.1:443", nil)
-		if err != nil {
-			fmt.Println(err)
+		// generate SSL self-signed sertificate:
+		//	   go run /usr/local/Cellar/go/1.4/libexec/src/crypto/tls/generate_cert.go --host="localhost"
+		// but dont work because SSL :(
+		cert_name, key_name := "cert.pem", "key.pem"
+		_, err_cert := os.Stat(cert_name)
+		_, err_key := os.Stat(key_name)
+		if err_cert != nil && err_key != nil {
+			err := http.ListenAndServeTLS("127.0.0.1:443", cert_name, key_name, nil)
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else {
+			err := http.ListenAndServe("127.0.0.1:443", nil)
+			if err != nil {
+				fmt.Println(err)
+			}
 		}
 	}()
 
