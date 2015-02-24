@@ -72,7 +72,7 @@ func main() {
 		cert_name, key_name := "cert.pem", "key.pem"
 		_, err_cert := os.Stat(cert_name)
 		_, err_key := os.Stat(key_name)
-		if err_cert != nil && err_key != nil {
+		if err_cert == nil && err_key == nil {
 			err := http.ListenAndServeTLS("127.0.0.1:443", cert_name, key_name, nil)
 			if err != nil {
 				fmt.Println(err)
