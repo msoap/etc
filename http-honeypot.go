@@ -44,7 +44,7 @@ func main() {
 	log.SetOutput(logfile)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "hi")
+		fmt.Fprintf(w, "")
 
 		ua := get_header(r.Header, "User-Agent")
 		referer := get_header(r.Header, "Referer")
