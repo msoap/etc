@@ -1,5 +1,21 @@
 #!/usr/bin/perl
 
+=head1 DESCRIPTION
+
+https://gist.github.com/msoap/4398036
+
+Download all photos from fotki.yandex.ru album.
+
+Usage:
+    yandex-fotki-get-album-fotos.pl http://fotki.yandex.ru/users/user_name/album/12345678/
+
+Install:
+    git clone https://gist.github.com/4398036.git
+    cp 4398036/yandex-fotki-get-album-fotos.pl ~/bin/yandex-fotki-get-album-fotos.pl
+    chmod 744 ~/bin/yandex-fotki-get-album-fotos.pl
+
+=cut
+
 use warnings;
 use strict;
 
