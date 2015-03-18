@@ -47,7 +47,6 @@ sub main {
 sub get_urls_from_rss {
     my $rss_url = shift;
 
-    $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
     my $xml = get($rss_url);
     my $rss = XMLin($xml, ForceArray => 1, ForceContent => 1);
     my $urls = [];
