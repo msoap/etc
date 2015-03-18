@@ -29,7 +29,6 @@ use warnings;
 use v5.10.0;
 
 use Getopt::Long;
-use LWP::Simple;
 use POSIX qw/strftime/;
 use JSON;
 use Term::ANSIColor;
@@ -40,6 +39,11 @@ use open ":std" => ":utf8";
 our $BASE_URL = "https://api-metrika.yandex.com/%s.json?id=%s&pretty=1&oauth_token=%s&date1=%s&date2=%s";
 our $CONFIG_FILENAME = "$ENV{HOME}/.config/metrika-show-common-stat.cfg";
 our $DEFAULT_DAYS = 7;
+
+BEGIN {
+    $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
+    eval "use LWP::Simple";
+}
 
 # ------------------------------------------------------------------------------
 sub main {
