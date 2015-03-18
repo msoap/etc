@@ -19,9 +19,13 @@ Install:
 use warnings;
 use strict;
 
-use LWP::Simple;
 use XML::Simple;
 use Data::Dumper;
+
+BEGIN {
+    $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
+    eval "use LWP::Simple";
+}
 
 # --------------------------------------------------------------------
 sub main {
