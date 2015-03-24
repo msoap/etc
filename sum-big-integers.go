@@ -3,8 +3,8 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/big"
 	"os"
@@ -12,18 +12,20 @@ import (
 )
 
 func main() {
-	stdin, err := ioutil.ReadAll(os.Stdin)
-	if err != nil {
-		log.Fatalln("read from stdin failed")
-	}
-
 	re := regexp.MustCompile(`\d+`)
 	i := new(big.Int)
 	sum := new(big.Int)
 
-	for _, integer_str := range re.FindAllString(string(stdin), -1) {
-		i.SetString(integer_str, 10)
-		sum.Add(sum, i)
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		for _, integer_str := range re.FindAllString(scanner.Text(), -1) {
+			i.SetString(integer_str, 10)
+			sum.Add(sum, i)
+		}
 	}
+	if err := scanner.Err(); err != nil {
+		log.Println("reading standard input error:", err)
+	}
+
 	fmt.Println(sum)
 }
