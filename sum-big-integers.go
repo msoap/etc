@@ -24,7 +24,7 @@ func main() {
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		log.Println("reading standard input error:", err)
+		log.Fatalln("reading standard input error:", err)
 	}
 
 	fmt.Println(sum)
