@@ -28,6 +28,7 @@ use strict;
 use warnings;
 use v5.10.0;
 
+use HTTP::Tiny;
 use Getopt::Long;
 use POSIX qw/strftime/;
 use JSON;
@@ -39,11 +40,6 @@ use open ":std" => ":utf8";
 our $BASE_URL = "https://api-metrika.yandex.com/%s.json?id=%s&pretty=1&oauth_token=%s&date1=%s&date2=%s";
 our $CONFIG_FILENAME = "$ENV{HOME}/.config/metrika-show-common-stat.cfg";
 our $DEFAULT_DAYS = 7;
-
-BEGIN {
-    $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
-    eval "use LWP::Simple";
-}
 
 # ------------------------------------------------------------------------------
 sub main {
@@ -87,9 +83,10 @@ sub main {
         my $stat = $get_stat->('stat/traffic/summary');
         if (exists $stat->{errors} && $stat->{errors}->[0]->{code}) {
             printf "  -- %s --\n",
-                   {'ERR_NO_DATA' => "no visits",
-                    'ERR_NO_NET'  => "network priblem",
-                    'ERR_JSON'    => "json parsing error",
+                   {'ERR_NO_DATA'    => "no visits",
+                    'ERR_NO_NET'     => "network priblem",
+                    'ERR_JSON'       => "json parsing error",
+                    'ERR_EMPTY_JSON' => "json is empty",
                    }->{ $stat->{errors}->[0]->{code} }
                    || "error: " . $stat->{errors}->[0]->{code};
             next;
@@ -138,8 +135,14 @@ sub get_stat($$$$) {
     my ($type, $date, $counter_id, $token) = @_;
 
     my $url = sprintf($BASE_URL, $type, $counter_id, $token, $date, $date);
-    my $json = get($url);
-    return {errors => [{code => 'ERR_NO_NET'}]} unless $json;
+
+    my $response = HTTP::Tiny->new->get($url);
+
+    # yandex.metrika send "400 Bad Request" and JSON for ERR_NO_DATA result :(
+    # return {errors => [{code => 'ERR_NO_NET'}]} unless $response->{success};
+
+    my $json = $response->{content};
+    return {errors => [{code => 'ERR_EMPTY_JSON'}]} unless $json && length($json) > 0;
 
     my $stat = eval {from_json($json)};
     return {errors => [{code => 'ERR_JSON'}]} unless ref($stat) eq 'HASH';
