@@ -69,7 +69,7 @@ sub main {
 
     die("need --token and --counter-id options\n") unless defined $config->{token} && defined $config->{'counter-id'};
 
-    for my $day (reverse 0 .. $config->{days}) {
+    for my $day (reverse 0 .. $config->{days} - 1) {
         my $date_param = strftime("%Y%m%d", localtime(time() - $day * 3600 * 24));
         my $date = strftime("%Y-%m-%d (%a)", localtime(time() - $day * 3600 * 24));
 
