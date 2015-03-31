@@ -19,7 +19,7 @@ build_one_arch()
     bin_name=$2
     export GOOS=$3
     export GOARCH=$4
-	echo build: $GOOS/$GOARCH
+    echo build: $GOOS/$GOARCH
     go build -o $2
 
     zip_name="$name-$VERSION.$GOARCH.$GOOS.zip"
@@ -43,8 +43,8 @@ fi
 
 for GOOS in linux darwin windows
 do
-	for GOARCH in amd64 386
-	do
+    for GOARCH in amd64 386
+    do
         if [ $GOOS == windows ]
         then
             bin_name="$name.exe"
@@ -53,7 +53,7 @@ do
         fi
 
         build_one_arch $name $bin_name $GOOS $GOARCH
-	done
+    done
 done
 
 # ARM
