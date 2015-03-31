@@ -9,8 +9,10 @@
 #   golang-cross-build.sh program_name
 #
 # version get from last git tag
+#
+# https://gist.github.com/msoap/11210119278aa41a00e8
 
-# build_one_arch($name, $bin_name, $GOOS, $GOARCH)
+# build_one_arch $name $bin_name $GOOS $GOARCH
 build_one_arch()
 {
     name=$1
