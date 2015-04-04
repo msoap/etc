@@ -10,9 +10,10 @@ import (
 	"math/big"
 	"os"
 	"regexp"
+	"runtime"
 )
 
-const buffer_len = 1000000
+const buffer_len = 65536
 
 //-------------------------------------------------------------------
 func isNumericSymbol(symbol byte) bool {
@@ -45,10 +46,16 @@ func main() {
 	buffer := make([]byte, buffer_len)
 	prev_str_num := ""
 
-	input := make(chan []string)
-	sum := make(chan *big.Int)
+	cnt_parallels := runtime.NumCPU()
+
+	input := make(chan []string, cnt_parallels)
+	output := make(chan *big.Int)
 	re := regexp.MustCompile(`\d+`)
-	go numbersSummator(input, sum)
+
+	runtime.GOMAXPROCS(cnt_parallels)
+	for i := 1; i <= cnt_parallels; i++ {
+		go numbersSummator(input, output)
+	}
 
 	for {
 		n, err := reader.Read(buffer)
@@ -87,5 +94,10 @@ func main() {
 
 	close(input)
 
-	fmt.Println(<-sum)
+	result := new(big.Int)
+	for i := 1; i <= cnt_parallels; i++ {
+		result.Add(result, <-output)
+	}
+
+	fmt.Println(result)
 }
