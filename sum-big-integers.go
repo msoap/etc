@@ -26,7 +26,7 @@ func isNumericSymbol(symbol byte) bool {
 
 //-------------------------------------------------------------------
 // goroutine for summation of numbers in string
-func numbersSummator(input chan []string, output chan *big.Int) {
+func numbersSummator(input <-chan []string, output chan<- *big.Int) {
 	i := new(big.Int)
 	sum := new(big.Int)
 
