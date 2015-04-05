@@ -29,7 +29,7 @@ build_one_arch()
     rm $bin_name
 }
 
-VERSION=$(git tag 2>/dev/null | grep -E '^[0-9]+' | head -1)
+VERSION=$(git tag 2>/dev/null | grep -E '^[0-9]+' | tail -1)
 VERSION=${VERSION:-0.1}
 
 name=$1
