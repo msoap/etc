@@ -9,7 +9,7 @@
 use warnings;
 use strict;
 
-our $VERSION = 0.80;
+our $VERSION = 0.82;
 
 use LWP::UserAgent;
 use URI::WithBase;
@@ -17,10 +17,11 @@ use MIME::Base64 qw(encode_base64);
 use POSIX qw(strftime);
 use Image::ExifTool;
 use Getopt::Std;
+use Compress::Zlib;
 
 our $SAVE_IMG_AS_EXT_FILES_GREATER_THAN = 1_000_000;
 our $TIMEOUT = 30;
-our $UA="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_2) AppleWebKit/534.52.7 (KHTML, like Gecko) Version/5.1.2 Safari/534.52.7";
+our $UA="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/600.5.17 (KHTML, like Gecko) Version/8.0.5 Safari/600.5.17";
 
 # for download JS too : create symlink wgethtml.pl -> wgethtml-js.pl
 # or use wgethtml.pl -j
@@ -90,16 +91,23 @@ sub lwp_load
         }
     }
 
-    my $response = LWP::UserAgent
-                   ->new(agent => $UA, timeout => $TIMEOUT)
-                   ->request(HTTP::Request->new("GET", $abs_url));
+    my $user_agent = LWP::UserAgent->new(agent => $UA, timeout => $TIMEOUT);
+    $user_agent->ssl_opts(verify_hostname => 0);
+    my $response = $user_agent->request(HTTP::Request->new("GET", $abs_url));
 
     if ($response->code != 200) {
         $www_cache{$abs_url} = {code => $response->code, message => $response->message, abs_url => $abs_url};
     } else {
+
+        my $content = $response->content();
+        if ($response->header("Content-Encoding") && $response->header("Content-Encoding") eq 'gzip') {
+            my $uncompress_content = Compress::Zlib::memGunzip($content);
+            $content = $uncompress_content if defined $uncompress_content;
+        }
+
         $www_cache{$abs_url} = {code => $response->code
                               , abs_url => $abs_url
-                              , content => $response->content()
+                              , content => $content
                               , content_type => ($response->header('Content-Type') || undef)};
     }
 
