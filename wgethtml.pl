@@ -67,6 +67,7 @@ $UA = $options{u} if $options{u};
       , qr[\Qspylog.com]i
       , qr[\Qbs.yandex.ru]i
       , qr[\Qmc.yandex.ru]i
+      , qr[\Qan.yandex.ru]i
       , qr[\Qtop.list.ru]i
       , qr[\Qhotlog.ru]i
     );
