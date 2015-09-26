@@ -57,6 +57,7 @@ do
 done
 
 # ARM
+export GOARM=6
 build_one_arch $name $name linux arm
 
 # SHA sums
