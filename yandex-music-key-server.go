@@ -38,10 +38,17 @@ const (
 	JS = `
 (function () {
 	console.log("Hello ya.music")
+
 	var ws = new WebSocket("wss://localhost:8900/listen_keys");
+
 	ws.onopen = function() {
 		ws.send("Hello server"); 
 	};
+
+	ws.onerror = function() {
+		console.log("Error open websocket")
+	};
+
 	ws.onmessage = function(event) {
 		console.log("Message from server:", event.data);
 		switch (event.data) {
