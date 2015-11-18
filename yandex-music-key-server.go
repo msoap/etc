@@ -2,7 +2,11 @@
 	Server for handle gloabal key for Yandex.Music service
 
 bookmarklet:
-  javascript:(function(){var js=document.createElement("script");document.body.appendChild(js);js.src='http://localhost:8900/script.js'})()
+	javascript:(function(){var js=document.createElement("script");document.body.appendChild(js);js.src='https://localhost:8900/script.js'})()
+
+Generate sertificates:
+	$ openssl genrsa -out server.key 2048
+	$ openssl req -new -x509 -key server.key -out server.pem -days 3650
 
 */
 package main
@@ -34,7 +38,7 @@ const (
 	JS = `
 (function () {
 	console.log("Hello ya.music")
-	var ws = new WebSocket("ws://localhost:8900/listen_keys");
+	var ws = new WebSocket("wss://localhost:8900/listen_keys");
 	ws.onopen = function() {
 		ws.send("Hello server"); 
 	};
@@ -108,9 +112,9 @@ func main() {
 		}
 	}))
 
-	log.Print("Listen websocket on localhost:" + PORT)
-	err := http.ListenAndServe("localhost:"+PORT, nil)
+	log.Print("Listen websocket on https://localhost:" + PORT)
+	err := http.ListenAndServeTLS("localhost:"+PORT, "server.pem", "server.key", nil)
 	if err != nil {
-		log.Fatal("ListenAndServe: " + err.Error())
+		log.Fatal("ListenAndServeTLS: " + err.Error())
 	}
 }
