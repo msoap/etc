@@ -39,7 +39,7 @@ const (
 (function () {
 	console.log("Hello ya.music")
 
-	var ws = new WebSocket("wss://localhost:8900/listen_keys");
+	var ws = new WebSocket("wss://localhost:` + PORT + `/listen_keys");
 
 	ws.onopen = function() {
 		ws.send("Hello server"); 
