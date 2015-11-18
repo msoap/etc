@@ -56,6 +56,7 @@ const (
 		var ws = new WebSocket("wss://localhost:` + PORT + `/listen_keys");
 
 		ws.onopen = function() {
+			console.log("Websocket connected")
 			ws.send("Hello server"); 
 		};
 
