@@ -8,6 +8,18 @@ Generate sertificates:
 	$ openssl genrsa -out server.key 2048
 	$ openssl req -new -x509 -key server.key -out server.pem -days 3650
 
+Hammerspoon config for global keys:
+-- Yandex.Music hotkeys via server
+hs.hotkey.bind({"cmd", "alt", "ctrl"}, "F8", function()
+    hs.http.get("https://localhost:8900/pause", nil)
+end)
+hs.hotkey.bind({"cmd", "alt", "ctrl"}, "F7", function()
+    hs.http.get("https://localhost:8900/prev", nil)
+end)
+hs.hotkey.bind({"cmd", "alt", "ctrl"}, "F9", function()
+    hs.http.get("https://localhost:8900/next", nil)
+end)
+
 */
 package main
 
