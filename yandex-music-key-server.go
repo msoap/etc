@@ -51,32 +51,43 @@ const (
 (function () {
 	console.log("Hello ya.music")
 
-	var ws = new WebSocket("wss://localhost:` + PORT + `/listen_keys");
+	var connect_ws = function () {
+		console.log("attempt connect")
+		var ws = new WebSocket("wss://localhost:` + PORT + `/listen_keys");
 
-	ws.onopen = function() {
-		ws.send("Hello server"); 
+		ws.onopen = function() {
+			ws.send("Hello server"); 
+		};
+
+		ws.onerror = function() {
+			console.log("Error open websocket")
+		};
+
+		ws.onclose = function () {
+			console.log("WS connect close")
+			setTimeout(function () {
+		        connect_ws();
+		    }, 5 * 1000);
+		};
+
+		ws.onmessage = function(event) {
+			console.log("Message from server:", event.data);
+			switch (event.data) {
+			    case "pause":
+					$('.player-controls__btn_play').click();
+			        break;
+			    case "prev":
+					$('.player-controls__btn_prev').click();
+			        break;
+			    case "next":
+					$('.player-controls__btn_next').click();
+			        break;
+			    default:
+					console.log("Action not found: " + event.data);
+			}
+		};
 	};
-
-	ws.onerror = function() {
-		console.log("Error open websocket")
-	};
-
-	ws.onmessage = function(event) {
-		console.log("Message from server:", event.data);
-		switch (event.data) {
-		    case "pause":
-				$('.player-controls__btn_play').click();
-		        break;
-		    case "prev":
-				$('.player-controls__btn_prev').click();
-		        break;
-		    case "next":
-				$('.player-controls__btn_next').click();
-		        break;
-		    default:
-				console.log("Action not found: " + event.data);
-		}
-	}
+	connect_ws();
 })()
 	`
 )
