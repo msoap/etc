@@ -1,3 +1,10 @@
+/*
+	Server for handle gloabal key for Yandex.Music service
+
+bookmarklet:
+  javascript:(function(){var js=document.createElement("script");document.body.appendChild(js);js.src='http://localhost:8900/script.js'})()
+
+*/
 package main
 
 import (
