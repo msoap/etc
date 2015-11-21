@@ -110,14 +110,20 @@ func main() {
 		fmt.Fprint(rw, JS)
 	})
 
+	websocket_connected := false
+
 	for _, action := range [...]string{"pause", "prev", "next"} {
 		action := action
 		http.HandleFunc("/"+action, func(rw http.ResponseWriter, req *http.Request) {
 			log.Printf("%s %s %s", req.Method, req.URL.Path, req.UserAgent())
 			fmt.Fprint(rw, action+" ok")
-			go func() {
-				events <- action
-			}()
+			if websocket_connected {
+				go func() {
+					events <- action
+				}()
+			} else {
+				log.Print("websocket isnt connected")
+			}
 		})
 	}
 
@@ -132,6 +138,11 @@ func main() {
 		}
 		log.Print("Recived: ", string(message[:n]))
 
+		websocket_connected = true
+		defer func() {
+			websocket_connected = false
+		}()
+
 		for {
 			select {
 			case event := <-events:
@@ -141,7 +152,6 @@ func main() {
 					return
 				}
 				log.Print("Send key: " + event)
-
 			}
 		}
 	}))
