@@ -20,6 +20,9 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "F9", function()
     hs.http.get("https://localhost:8900/next", nil)
 end)
 
+Download from:
+	https://gist.github.com/msoap/acd3da6452e9e36e48e0
+
 */
 package main
 
