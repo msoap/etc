@@ -41,12 +41,12 @@ const (
 	INDEX = `
 <!doctype html>
 <head>
-  <meta charset="utf-8">
-  <title>Yandex Music Key Server</title>
-  <script src="/script.js"></script>
+	<meta charset="utf-8">
+	<title>Yandex Music Key Server</title>
+	<script src="/script.js"></script>
 </head>
 <body>
-    <h1>Yandex Music Key Server</h1>  
+	<h1>Yandex Music Key Server</h1>  
 </body>
 </html>
 	`
@@ -70,23 +70,23 @@ const (
 		ws.onclose = function () {
 			console.log("WS connect close")
 			setTimeout(function () {
-		        connect_ws();
-		    }, 5 * 1000);
+				connect_ws();
+			}, 5 * 1000);
 		};
 
 		ws.onmessage = function(event) {
 			console.log("Message from server:", event.data);
 			switch (event.data) {
-			    case "pause":
+				case "pause":
 					$('.player-controls__btn_play').click();
-			        break;
-			    case "prev":
+					break;
+				case "prev":
 					$('.player-controls__btn_prev').click();
-			        break;
-			    case "next":
+					break;
+				case "next":
 					$('.player-controls__btn_next').click();
-			        break;
-			    default:
+					break;
+				default:
 					console.log("Action not found: " + event.data);
 			}
 		};
