@@ -1,5 +1,5 @@
 /*
-	Server for handle gloabal key for Yandex.Music service
+	Server for handle global key for Yandex.Music service
 
 bookmarklet:
 	javascript:(function(){var js=document.createElement("script");document.body.appendChild(js);js.src='https://localhost:8900/script.js'})()
