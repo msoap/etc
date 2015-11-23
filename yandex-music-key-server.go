@@ -8,6 +8,9 @@ Generate sertificates:
 	$ openssl genrsa -out server.key 2048
 	$ openssl req -new -x509 -key server.key -out server.pem -days 3650
 
+or convert from .p12 (exported from keychain):
+	$ openssl pkcs12 -in cert.p12 -out server.pem -nodes
+
 Hammerspoon config for global keys:
 -- Yandex.Music hotkeys via server
 hs.hotkey.bind({"cmd", "alt", "ctrl"}, "F8", function()
