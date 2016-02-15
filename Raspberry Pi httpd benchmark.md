@@ -4,404 +4,272 @@ Raspberry Pi httpd benchmark
 Total RPS
 ---------
 
-                        Nginx: 351.5 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                  Go/fasthttp: 341.9 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                           Go: 247.2 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                      Node.js: 126.0 ■■■■■■■■■■■■■■■■■■■■■■■■■
-            Perl/HTTP::Daemon:  66.9 ■■■■■■■■■■■■■
-    Perl/HTTP::Server::Simple:  66.4 ■■■■■■■■■■■■■
-                       Python:  59.5 ■■■■■■■■■■■
-                  Perl/Dancer:  28.2 ■■■■■
-             Perl/Mojolicious:  17.6 ■■■
+All:
+
+                  Go/fasthttp (10 thr): 937.8 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                        Nginx (10 thr): 826.1 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                        Nginx ( 2 thr): 647.3 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                           Go (10 thr): 642.5 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                  Go/fasthttp ( 2 thr): 544.6 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                           Go ( 2 thr): 392.2 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                      Node.js ( 2 thr): 199.8 ■■■■■■■■■■■■■■■■■■■
+                      Node.js (10 thr): 195.1 ■■■■■■■■■■■■■■■■■■■
+                       Python ( 2 thr): 122.9 ■■■■■■■■■■■■
+                       Python (10 thr):  95.5 ■■■■■■■■■
+            Perl/HTTP::Daemon ( 1 thr):  90.4 ■■■■■■■■■
+    Perl/HTTP::Server::Simple ( 2 thr):  79.2 ■■■■■■■
+                  Perl/Dancer ( 2 thr):  31.0 ■■■
+             Perl/Mojolicious ( 2 thr):  28.9 ■■
+
+Run in 10 threads:
+
+               Go/fasthttp (10 thr): 937.8 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                     Nginx (10 thr): 826.1 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                        Go (10 thr): 642.5 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                   Node.js (10 thr): 195.1 ■■■■■■■■■■■■■■■■■■■
+                    Python (10 thr):  95.5 ■■■■■■■■■
+
+Run in 2 threads:
+
+                        Nginx ( 2 thr): 647.3 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                  Go/fasthttp ( 2 thr): 544.6 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                           Go ( 2 thr): 392.2 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                      Node.js ( 2 thr): 199.8 ■■■■■■■■■■■■■■■■■■■
+                       Python ( 2 thr): 122.9 ■■■■■■■■■■■■
+    Perl/HTTP::Server::Simple ( 2 thr):  79.2 ■■■■■■■
+                  Perl/Dancer ( 2 thr):  31.0 ■■■
+             Perl/Mojolicious ( 2 thr):  28.9 ■■
 
 ####Create chart:
 
-    cat Raspberry*.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat} $lang = $1 if /^##(\w.+)$/; if (/Requests per second:\s+(\d+\.\d+)/) {$stat{$lang} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%27s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 5)}}'
+For all, 10 and 2 threads:
 
-####ab command line
+    cat Raspberry*.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 10)}}'
+    cat Raspberry*.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/ && $thr == 10) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 10)}}'
+    cat Raspberry*.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/ && $thr == 2) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 10)}}'
 
-    ab -r -c 10 -n 1000 http://raspberrypi.local:8080/
+####wrk command line
+
+    wrk -d 60 -c 2 -t 2 http://raspberrypi.local:8080/
+    wrk -d 60 -c 10 -t 10 http://raspberrypi.local:8080/
+
+version: wrk 4.0.0
+
+HTTP response size is 228 bytes
 
 ##Nginx
 
-With one small html file
+version: 1.2.1
 
-###ab result
+###wrk result
 
-    Server Software:        nginx/1.2.1
-    Server Hostname:        192.168.1.7
-    Server Port:            80
+    Running 1m test @ http://192.168.1.7/test
+      2 threads and 2 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency     3.09ms    0.95ms  19.51ms   90.00%
+        Req/Sec   325.17     28.44   390.00     89.57%
+      38888 requests in 1.00m, 8.45MB read
+    Requests/sec:    647.27
+    Transfer/sec:    144.09KB
 
-    Document Path:          /
-    Document Length:        228 bytes
+Run in 10 threads:
 
-    Concurrency Level:      10
-    Time taken for tests:   2.845 seconds
-    Complete requests:      1000
-    Failed requests:        0
-    Total transferred:      438000 bytes
-    HTML transferred:       228000 bytes
-    Requests per second:    351.49 [#/sec] (mean)
-    Time per request:       28.450 [ms] (mean)
-    Time per request:       2.845 [ms] (mean, across all concurrent requests)
-    Transfer rate:          150.34 [Kbytes/sec] received
-
-    Connection Times (ms)
-                  min  mean[+/-sd] median   max
-    Connect:        2    3   1.4      3      13
-    Processing:     6   25   7.7     26      61
-    Waiting:        6   25   7.7     26      61
-    Total:          9   28   7.7     28      65
-
-    Percentage of the requests served within a certain time (ms)
-      50%     28
-      66%     30
-      75%     31
-      80%     32
-      90%     38
-      95%     43
-      98%     48
-      99%     54
-     100%     65 (longest request)
+    Running 1m test @ http://192.168.1.7/test
+      10 threads and 10 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency    13.06ms    9.86ms 103.68ms   72.38%
+        Req/Sec    82.89     29.38   270.00     74.09%
+      49623 requests in 1.00m, 10.79MB read
+    Requests/sec:    826.12
+    Transfer/sec:    183.90KB
 
 ##Go
 
-go version go1.5 linux/arm
+version: go version go1.6rc2 linux/arm
 
 ###run
 
     go build httpd.go
     ./httpd
 
-###ab result
+###wrk result
 
-    Server Software:
-    Server Hostname:        192.168.1.7
-    Server Port:            8080
+    Running 1m test @ http://192.168.1.7:8080/
+      2 threads and 2 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency     5.15ms    2.25ms  49.64ms   77.82%
+        Req/Sec   197.09     24.45   330.00     77.57%
+      23575 requests in 1.00m, 5.13MB read
+    Requests/sec:    392.23
+    Transfer/sec:     87.33KB
 
-    Document Path:          /
-    Document Length:        19 bytes
+Run in 10 threads:
 
-    Concurrency Level:      10
-    Time taken for tests:   4.045 seconds
-    Complete requests:      1000
-    Failed requests:        0
-    Total transferred:      136000 bytes
-    HTML transferred:       19000 bytes
-    Requests per second:    247.20 [#/sec] (mean)
-    Time per request:       40.453 [ms] (mean)
-    Time per request:       4.045 [ms] (mean, across all concurrent requests)
-    Transfer rate:          32.83 [Kbytes/sec] received
-
-    Connection Times (ms)
-                  min  mean[+/-sd] median   max
-    Connect:        2    2   0.7      2       8
-    Processing:     4   38  10.9     41      65
-    Waiting:        4   37  10.8     41      64
-    Total:          7   40  10.9     43      68
-
-    Percentage of the requests served within a certain time (ms)
-      50%     43
-      66%     44
-      75%     45
-      80%     45
-      90%     46
-      95%     47
-      98%     50
-      99%     54
-     100%     68 (longest request)
+    Running 1m test @ http://192.168.1.7:8080/
+      10 threads and 10 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency    15.84ms    7.68ms 102.41ms   71.94%
+        Req/Sec    64.41     18.75   110.00     71.40%
+      38611 requests in 1.00m, 8.40MB read
+    Requests/sec:    642.51
+    Transfer/sec:    143.06KB
 
 ##Go/fasthttp
 
-go version go1.5 linux/arm
+version: go version go1.6rc2 linux/arm
 
 ###run
 
     go build httpd_fast.go
     ./httpd_fast
 
-###ab result
+###wrk result
 
-    Server Software:        fasthttp
-    Server Hostname:        192.168.1.7
-    Server Port:            8080
+    Running 1m test @ http://192.168.1.7:8080/
+      2 threads and 2 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency     3.70ms    1.30ms  21.67ms   83.68%
+        Req/Sec   273.68     18.63   323.00     81.54%
+      32729 requests in 1.00m, 7.12MB read
+    Requests/sec:    544.58
+    Transfer/sec:    121.25KB
 
-    Document Path:          /
-    Document Length:        19 bytes
+Run in 10 threads:
 
-    Concurrency Level:      10
-    Time taken for tests:   2.925 seconds
-    Complete requests:      1000
-    Failed requests:        0
-    Total transferred:      139000 bytes
-    HTML transferred:       19000 bytes
-    Requests per second:    341.85 [#/sec] (mean)
-    Time per request:       29.253 [ms] (mean)
-    Time per request:       2.925 [ms] (mean, across all concurrent requests)
-    Transfer rate:          46.40 [Kbytes/sec] received
-
-    Connection Times (ms)
-                  min  mean[+/-sd] median   max
-    Connect:        2    3   1.2      3       9
-    Processing:     3   26   8.1     28      71
-    Waiting:        3   25   7.7     27      49
-    Total:          5   29   8.3     31      74
-
-    Percentage of the requests served within a certain time (ms)
-      50%     31
-      66%     32
-      75%     33
-      80%     33
-      90%     34
-      95%     36
-      98%     38
-      99%     47
-     100%     74 (longest request)
- 
-##Perl/Mojolicious
-
-Version: 6.32
-
-###run
-
-    hypnotoad ./httpd-mojo.pl
-
-###ab result
-
-    Server Software:        Mojolicious
-    Server Hostname:        192.168.1.7
-    Server Port:            8080
-
-    Document Path:          /
-    Document Length:        38 bytes
-
-    Concurrency Level:      10
-    Time taken for tests:   56.730 seconds
-    Complete requests:      1000
-    Failed requests:        0
-    Total transferred:      181000 bytes
-    HTML transferred:       38000 bytes
-    Requests per second:    17.63 [#/sec] (mean)
-    Time per request:       567.305 [ms] (mean)
-    Time per request:       56.730 [ms] (mean, across all concurrent requests)
-    Transfer rate:          3.12 [Kbytes/sec] received
-
-    Connection Times (ms)
-                  min  mean[+/-sd] median   max
-    Connect:        2    2   0.7      2      17
-    Processing:   144  564 302.1    516    2276
-    Waiting:      142  554 302.1    501    2225
-    Total:        147  566 302.1    517    2278
-
-    Percentage of the requests served within a certain time (ms)
-      50%    517
-      66%    653
-      75%    737
-      80%    806
-      90%    967
-      95%   1107
-      98%   1358
-      99%   1464
-     100%   2278 (longest request)
-
-##Perl/HTTP::Daemon
-
-###ab result
-
-    Server Software:        libwww-perl-daemon/6.01
-    Server Hostname:        192.168.1.7
-    Server Port:            8080
-
-    Document Path:          /
-    Document Length:        40 bytes
-
-    Concurrency Level:      1
-    Time taken for tests:   14.958 seconds
-    Complete requests:      1000
-    Failed requests:        0
-    Total transferred:      175000 bytes
-    HTML transferred:       40000 bytes
-    Requests per second:    66.86 [#/sec] (mean)
-    Time per request:       14.958 [ms] (mean)
-    Time per request:       14.958 [ms] (mean, across all concurrent requests)
-    Transfer rate:          11.43 [Kbytes/sec] received
-
-    Connection Times (ms)
-                  min  mean[+/-sd] median   max
-    Connect:        2    2   0.7      2       7
-    Processing:    11   13   2.9     12      95
-    Waiting:        8    9   0.7      9      18
-    Total:         13   15   3.1     14     100
-
-    Percentage of the requests served within a certain time (ms)
-      50%     14
-      66%     15
-      75%     15
-      80%     15
-      90%     16
-      95%     17
-      98%     18
-      99%     19
-     100%    100 (longest request)
-
-##Perl/Dancer
-
-###ab result
-
-    Server Software:        Perl
-    Server Hostname:        192.168.1.7
-    Server Port:            3000
-
-    Document Path:          /
-    Document Length:        33 bytes
-
-    Concurrency Level:      10
-    Time taken for tests:   35.496 seconds
-    Complete requests:      1000
-    Failed requests:        0
-    Total transferred:      159000 bytes
-    HTML transferred:       33000 bytes
-    Requests per second:    28.17 [#/sec] (mean)
-    Time per request:       354.959 [ms] (mean)
-    Time per request:       35.496 [ms] (mean, across all concurrent requests)
-    Transfer rate:          4.37 [Kbytes/sec] received
-
-    Connection Times (ms)
-                  min  mean[+/-sd] median   max
-    Connect:        2    5  23.1      2     360
-    Processing:    46  349  27.0    347     609
-    Waiting:       46  349  27.0    347     609
-    Total:        298  353  21.1    350     613
-
-    Percentage of the requests served within a certain time (ms)
-      50%    350
-      66%    351
-      75%    351
-      80%    352
-      90%    352
-      95%    354
-      98%    424
-      99%    477
-     100%    613 (longest request)
-
-##Perl/HTTP::Server::Simple
-
-###ab result
-
-    Server Software:        Simple
-    Server Hostname:        192.168.1.7
-    Server Port:            8080
-
-    Document Path:          /
-    Document Length:        42 bytes
-
-    Concurrency Level:      10
-    Time taken for tests:   15.067 seconds
-    Complete requests:      1000
-    Failed requests:        0
-    Total transferred:      106000 bytes
-    HTML transferred:       42000 bytes
-    Requests per second:    66.37 [#/sec] (mean)
-    Time per request:       150.670 [ms] (mean)
-    Time per request:       15.067 [ms] (mean, across all concurrent requests)
-    Transfer rate:          6.87 [Kbytes/sec] received
-
-    Connection Times (ms)
-                  min  mean[+/-sd] median   max
-    Connect:        2    2   1.5      2      35
-    Processing:   103  148  98.9    138    1192
-    Waiting:      103  147  98.9    137    1191
-    Total:        125  150  99.1    140    1197
-
-    Percentage of the requests served within a certain time (ms)
-      50%    140
-      66%    140
-      75%    141
-      80%    141
-      90%    142
-      95%    143
-      98%    145
-      99%   1072
-     100%   1197 (longest request)
+    Running 1m test @ http://192.168.1.7:8080/
+      10 threads and 10 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency    11.70ms    8.50ms  97.12ms   85.10%
+        Req/Sec    94.14     22.47   180.00     64.05%
+      56329 requests in 1.00m, 12.25MB read
+    Requests/sec:    937.78
+    Transfer/sec:    208.80KB
 
 ##Node.js
 
-v0.10.22
+version: 5.6.0
 
-###ab result
+###wrk result
 
-    Server Software:
-    Server Hostname:        192.168.1.7
-    Server Port:            8080
+    Running 1m test @ http://192.168.1.7:8080/
+      2 threads and 2 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency    10.01ms    1.53ms  36.74ms   85.47%
+        Req/Sec   100.30      7.36   121.00     57.63%
+      12007 requests in 1.00m, 2.74MB read
+    Requests/sec:    199.76
+    Transfer/sec:     46.62KB
 
-    Document Path:          /
-    Document Length:        24 bytes
+Run in 10 threads:
 
-    Concurrency Level:      10
-    Time taken for tests:   7.938 seconds
-    Complete requests:      1000
-    Failed requests:        0
-    Total transferred:      125000 bytes
-    HTML transferred:       24000 bytes
-    Requests per second:    125.97 [#/sec] (mean)
-    Time per request:       79.385 [ms] (mean)
-    Time per request:       7.938 [ms] (mean, across all concurrent requests)
-    Transfer rate:          15.38 [Kbytes/sec] received
-
-    Connection Times (ms)
-                  min  mean[+/-sd] median   max
-    Connect:        1    2   0.6      2       8
-    Processing:    23   77  12.7     75     195
-    Waiting:       22   76  12.7     74     194
-    Total:         25   79  12.6     77     197
-
-    Percentage of the requests served within a certain time (ms)
-      50%     77
-      66%     78
-      75%     78
-      80%     79
-      90%     80
-      95%     87
-      98%    111
-      99%    175
-     100%    197 (longest request)
+    Running 1m test @ http://192.168.1.7:8080/
+      10 threads and 10 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency    51.22ms    3.66ms 141.74ms   96.33%
+        Req/Sec    19.28      2.33    30.00     94.80%
+      11725 requests in 1.00m, 2.67MB read
+    Requests/sec:    195.08
+    Transfer/sec:     45.53KB
 
 ##Python
 
-###ab result
+version: 2.7.3
 
-    Server Software:        BaseHTTP/0.3
-    Server Hostname:        192.168.1.7
-    Server Port:            8080
+###run
 
-    Document Path:          /
-    Document Length:        17 bytes
+    ./httpd.py > /dev/null 2>&1
 
-    Concurrency Level:      10
-    Time taken for tests:   16.818 seconds
-    Complete requests:      1000
-    Failed requests:        0
-    Total transferred:      134000 bytes
-    HTML transferred:       17000 bytes
-    Requests per second:    59.46 [#/sec] (mean)
-    Time per request:       168.184 [ms] (mean)
-    Time per request:       16.818 [ms] (mean, across all concurrent requests)
-    Transfer rate:          7.78 [Kbytes/sec] received
+###wrk result
 
-    Connection Times (ms)
-                  min  mean[+/-sd] median   max
-    Connect:        2    3  11.4      2     273
-    Processing:    21  112 640.4     67   16295
-    Waiting:       18  109 640.4     65   16293
-    Total:         23  115 644.5     70   16432
+    Running 1m test @ http://192.168.1.7:8080/
+      2 threads and 2 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency    14.15ms    1.12ms  25.76ms   79.60%
+        Req/Sec    61.52      4.24    70.00     80.10%
+      7377 requests in 1.00m, 1.60MB read
+    Requests/sec:    122.87
+    Transfer/sec:     27.36KB
 
-    Percentage of the requests served within a certain time (ms)
-      50%     70
-      66%     70
-      75%     71
-      80%     71
-      90%     72
-      95%     72
-      98%    262
-      99%    548
-     100%  16432 (longest request)
+Run in 10 threads:
+
+    Running 1m test @ http://192.168.1.7:8080/
+      10 threads and 10 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency   147.70ms  280.60ms   1.93s    91.20%
+        Req/Sec    16.07      5.75    30.00     68.58%
+      5739 requests in 1.00m, 1.25MB read
+      Socket errors: connect 0, read 0, write 0, timeout 28
+    Requests/sec:     95.52
+    Transfer/sec:     21.27KB
+
+##Perl/Mojolicious
+
+version: 6.46
+
+###run
+
+    hypnotoad --foreground ./httpd-mojo.pl
+
+###wrk result
+
+    Running 1m test @ http://192.168.1.7:8080/
+      2 threads and 2 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency    69.23ms    7.64ms 174.54ms   87.03%
+        Req/Sec    14.10      5.07    20.00     45.06%
+      1733 requests in 1.00m, 387.12KB read
+    Requests/sec:     28.85
+    Transfer/sec:      6.45KB
+
+##Perl/HTTP::Daemon
+
+version: 6.01
+
+    ./httpd.pl
+
+###wrk result
+
+Run in 1 thread:
+
+    Running 1m test @ http://192.168.1.7:8080/
+      1 threads and 1 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency    11.05ms    0.91ms  23.85ms   83.68%
+        Req/Sec    90.67      5.26   101.00     75.04%
+      5426 requests in 1.00m, 1.18MB read
+    Requests/sec:     90.40
+    Transfer/sec:     20.13KB
+
+##Perl/Dancer
+
+version: 1.3118
+
+    ./httpd-dancer.pl
+
+###wrk result
+
+    Running 1m test @ http://192.168.1.7:3000/
+      2 threads and 2 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency    62.11ms    1.59ms  77.28ms   78.48%
+        Req/Sec    15.21      5.07    20.00     59.23%
+      1863 requests in 1.00m, 414.81KB read
+    Requests/sec:     31.02
+    Transfer/sec:      6.91KB
+
+##Perl/HTTP::Server::Simple
+
+version: 0.44
+
+    ./httpd-server-simple.pl
+
+###wrk result
+
+    Running 1m test @ http://192.168.1.7:8080/
+      2 threads and 2 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency    22.93ms    1.17ms  38.46ms   81.79%
+        Req/Sec    39.58      2.72    60.00     93.37%
+      4762 requests in 1.00m, 1.04MB read
+    Requests/sec:     79.23
+    Transfer/sec:     17.64KB
