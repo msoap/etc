@@ -13,7 +13,7 @@ sub handle_request {
     my $cgi = shift;
     print "HTTP/1.0 200 OK\r\n";    
     print $cgi->header, "\n";
-    print "Hello from perl with HTTP::Server::Simple";
+    print "Hello from perl with HTTP::Server::Simple//012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
 }
 
 package main;
