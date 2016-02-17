@@ -91,6 +91,10 @@ Run in 10 threads:
 
 version: 0.8.1
 
+run:
+
+    caddy -port 8080 browse
+
 ###wrk result
 
     Running 1m test @ http://192.168.1.7:8080/test
