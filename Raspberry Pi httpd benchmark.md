@@ -6,47 +6,51 @@ Total RPS
 
 All:
 
-                  Go/fasthttp (10 thr): 937.8 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                        Nginx (10 thr): 826.1 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                        Nginx ( 2 thr): 647.3 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                           Go (10 thr): 642.5 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                  Go/fasthttp ( 2 thr): 544.6 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                           Go ( 2 thr): 392.2 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                      Node.js ( 2 thr): 199.8 ■■■■■■■■■■■■■■■■■■■
-                      Node.js (10 thr): 195.1 ■■■■■■■■■■■■■■■■■■■
-                       Python ( 2 thr): 122.9 ■■■■■■■■■■■■
-                       Python (10 thr):  95.5 ■■■■■■■■■
-            Perl/HTTP::Daemon ( 1 thr):  90.4 ■■■■■■■■■
-    Perl/HTTP::Server::Simple ( 2 thr):  79.2 ■■■■■■■
-                  Perl/Dancer ( 2 thr):  31.0 ■■■
-             Perl/Mojolicious ( 2 thr):  28.9 ■■
+                   Go/fasthttp (10 thr): 937.8 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                         Nginx (10 thr): 826.1 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                         Nginx ( 2 thr): 647.3 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                            Go (10 thr): 642.5 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                   Go/fasthttp ( 2 thr): 544.6 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                            Go ( 2 thr): 392.2 ■■■■■■■■■■■■■■■■■■■■■■■■■■
+                       Node.js ( 2 thr): 199.8 ■■■■■■■■■■■■■
+                         Caddy (10 thr): 199.1 ■■■■■■■■■■■■■
+                       Node.js (10 thr): 195.1 ■■■■■■■■■■■■■
+                         Caddy ( 2 thr): 177.6 ■■■■■■■■■■■
+                        Python ( 2 thr): 122.9 ■■■■■■■■
+                        Python (10 thr):  95.5 ■■■■■■
+             Perl/HTTP::Daemon ( 1 thr):  90.4 ■■■■■■
+     Perl/HTTP::Server::Simple ( 2 thr):  79.2 ■■■■■
+                   Perl/Dancer ( 2 thr):  31.0 ■■
+              Perl/Mojolicious ( 2 thr):  28.9 ■
 
 Run in 10 threads:
 
-               Go/fasthttp (10 thr): 937.8 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                     Nginx (10 thr): 826.1 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                        Go (10 thr): 642.5 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                   Node.js (10 thr): 195.1 ■■■■■■■■■■■■■■■■■■■
-                    Python (10 thr):  95.5 ■■■■■■■■■
+    Go/fasthttp (10 thr): 937.8 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+          Nginx (10 thr): 826.1 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+             Go (10 thr): 642.5 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+          Caddy (10 thr): 199.1 ■■■■■■■■■■■■■
+        Node.js (10 thr): 195.1 ■■■■■■■■■■■■■
+         Python (10 thr):  95.5 ■■■■■■
 
 Run in 2 threads:
 
-                        Nginx ( 2 thr): 647.3 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                  Go/fasthttp ( 2 thr): 544.6 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                           Go ( 2 thr): 392.2 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                      Node.js ( 2 thr): 199.8 ■■■■■■■■■■■■■■■■■■■
-                       Python ( 2 thr): 122.9 ■■■■■■■■■■■■
-    Perl/HTTP::Server::Simple ( 2 thr):  79.2 ■■■■■■■
-                  Perl/Dancer ( 2 thr):  31.0 ■■■
-             Perl/Mojolicious ( 2 thr):  28.9 ■■
+                        Nginx ( 2 thr): 647.3 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                  Go/fasthttp ( 2 thr): 544.6 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                           Go ( 2 thr): 392.2 ■■■■■■■■■■■■■■■■■■■■■■■■■■
+                      Node.js ( 2 thr): 199.8 ■■■■■■■■■■■■■
+                        Caddy ( 2 thr): 177.6 ■■■■■■■■■■■
+                       Python ( 2 thr): 122.9 ■■■■■■■■
+    Perl/HTTP::Server::Simple ( 2 thr):  79.2 ■■■■■
+                  Perl/Dancer ( 2 thr):  31.0 ■■
+             Perl/Mojolicious ( 2 thr):  28.9 ■
 
 ####Create chart:
 
 For all, 10 and 2 threads:
 
-    cat Raspberry*.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 10)}}'
-    cat Raspberry*.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/ && $thr == 10) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 10)}}'
-    cat Raspberry*.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/ && $thr == 2) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 10)}}'
+    cat Raspberry*.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 15)}}'
+    cat Raspberry*.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/ && $thr == 10) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 15)}}'
+    cat Raspberry*.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/ && $thr == 2) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 15)}}'
 
 ####wrk command line
 
@@ -82,6 +86,32 @@ Run in 10 threads:
       49623 requests in 1.00m, 10.79MB read
     Requests/sec:    826.12
     Transfer/sec:    183.90KB
+
+##Caddy
+
+version: 0.8.1
+
+###wrk result
+
+    Running 1m test @ http://192.168.1.7:8080/test
+      2 threads and 2 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency    12.03ms    8.09ms  89.77ms   81.63%
+        Req/Sec    89.04     17.43   141.00     62.31%
+      10665 requests in 1.00m, 2.32MB read
+    Requests/sec:    177.57
+    Transfer/sec:     39.54KB
+
+Run in 10 threads:
+
+    Running 1m test @ http://192.168.1.7:8080/test
+      10 threads and 10 connections
+      Thread Stats   Avg      Stdev     Max   +/- Stdev
+        Latency    50.68ms   21.52ms 201.55ms   72.34%
+        Req/Sec    19.75      7.00    49.00     55.73%
+      11959 requests in 1.00m, 2.60MB read
+    Requests/sec:    199.09
+    Transfer/sec:     44.33KB
 
 ##Go
 
