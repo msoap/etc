@@ -10,7 +10,7 @@ import (
 // ----------------------------------------------------------------------------
 func main() {
 	fmt.Println("Start fasthttp on 8080")
-	responseBytes := []byte("Hello world from Go/0123456789012345678901234567890123456789012345678901234567890123456789/12")
+	responseBytes := []byte("Hello world from Go/Fasthttp/9012345678901234567890123456789012345678901234567890123456789/12")
 
 	err := fasthttp.ListenAndServe(":8080", func(ctx *fasthttp.RequestCtx) {
 		_, err := ctx.Write(responseBytes)
