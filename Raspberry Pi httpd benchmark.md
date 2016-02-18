@@ -6,12 +6,12 @@ Total RPS
 
 All:
 
-                   Go/fasthttp (10 thr): 937.8 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                   Go/fasthttp (10 thr): 930.0 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
                          Nginx (10 thr): 826.1 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
                          Nginx ( 2 thr): 647.3 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                            Go (10 thr): 642.5 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                   Go/fasthttp ( 2 thr): 544.6 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                            Go ( 2 thr): 392.2 ■■■■■■■■■■■■■■■■■■■■■■■■■■
+                            Go (10 thr): 606.3 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                   Go/fasthttp ( 2 thr): 530.5 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                            Go ( 2 thr): 377.4 ■■■■■■■■■■■■■■■■■■■■■■■■■
                        Node.js ( 2 thr): 199.8 ■■■■■■■■■■■■■
                          Caddy (10 thr): 199.1 ■■■■■■■■■■■■■
                        Node.js (10 thr): 195.1 ■■■■■■■■■■■■■
@@ -25,24 +25,24 @@ All:
 
 Run in 10 threads:
 
-    Go/fasthttp (10 thr): 937.8 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+    Go/fasthttp (10 thr): 930.0 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
           Nginx (10 thr): 826.1 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-             Go (10 thr): 642.5 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+             Go (10 thr): 606.3 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
           Caddy (10 thr): 199.1 ■■■■■■■■■■■■■
         Node.js (10 thr): 195.1 ■■■■■■■■■■■■■
          Python (10 thr):  95.5 ■■■■■■
 
 Run in 2 threads:
 
-                        Nginx ( 2 thr): 647.3 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                  Go/fasthttp ( 2 thr): 544.6 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                           Go ( 2 thr): 392.2 ■■■■■■■■■■■■■■■■■■■■■■■■■■
-                      Node.js ( 2 thr): 199.8 ■■■■■■■■■■■■■
-                        Caddy ( 2 thr): 177.6 ■■■■■■■■■■■
-                       Python ( 2 thr): 122.9 ■■■■■■■■
-    Perl/HTTP::Server::Simple ( 2 thr):  79.2 ■■■■■
-                  Perl/Dancer ( 2 thr):  31.0 ■■
-             Perl/Mojolicious ( 2 thr):  28.9 ■
+                         Nginx ( 2 thr): 647.3 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                   Go/fasthttp ( 2 thr): 530.5 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                            Go ( 2 thr): 377.4 ■■■■■■■■■■■■■■■■■■■■■■■■■
+                       Node.js ( 2 thr): 199.8 ■■■■■■■■■■■■■
+                         Caddy ( 2 thr): 177.6 ■■■■■■■■■■■
+                        Python ( 2 thr): 122.9 ■■■■■■■■
+     Perl/HTTP::Server::Simple ( 2 thr):  79.2 ■■■■■
+                   Perl/Dancer ( 2 thr):  31.0 ■■
+              Perl/Mojolicious ( 2 thr):  28.9 ■
 
 ####Create chart:
 
@@ -119,7 +119,7 @@ Run in 10 threads:
 
 ##Go
 
-version: go version go1.6rc2 linux/arm
+version: go version go1.6 linux/arm
 
 ###run
 
@@ -131,26 +131,26 @@ version: go version go1.6rc2 linux/arm
     Running 1m test @ http://192.168.1.7:8080/
       2 threads and 2 connections
       Thread Stats   Avg      Stdev     Max   +/- Stdev
-        Latency     5.15ms    2.25ms  49.64ms   77.82%
-        Req/Sec   197.09     24.45   330.00     77.57%
-      23575 requests in 1.00m, 5.13MB read
-    Requests/sec:    392.23
-    Transfer/sec:     87.33KB
+        Latency     5.38ms    2.41ms  47.12ms   78.42%
+        Req/Sec   189.64     21.68   303.00     77.49%
+      22679 requests in 1.00m, 4.93MB read
+    Requests/sec:    377.42
+    Transfer/sec:     84.04KB
 
 Run in 10 threads:
 
     Running 1m test @ http://192.168.1.7:8080/
       10 threads and 10 connections
       Thread Stats   Avg      Stdev     Max   +/- Stdev
-        Latency    15.84ms    7.68ms 102.41ms   71.94%
-        Req/Sec    64.41     18.75   110.00     71.40%
-      38611 requests in 1.00m, 8.40MB read
-    Requests/sec:    642.51
-    Transfer/sec:    143.06KB
+        Latency    16.74ms    7.80ms  97.04ms   72.18%
+        Req/Sec    60.75     16.59   111.00     69.71%
+      36420 requests in 1.00m, 7.92MB read
+    Requests/sec:    606.27
+    Transfer/sec:    134.99KB
 
 ##Go/fasthttp
 
-version: go version go1.6rc2 linux/arm
+version: go version go1.6 linux/arm
 
 ###run
 
@@ -162,22 +162,22 @@ version: go version go1.6rc2 linux/arm
     Running 1m test @ http://192.168.1.7:8080/
       2 threads and 2 connections
       Thread Stats   Avg      Stdev     Max   +/- Stdev
-        Latency     3.70ms    1.30ms  21.67ms   83.68%
-        Req/Sec   273.68     18.63   323.00     81.54%
-      32729 requests in 1.00m, 7.12MB read
-    Requests/sec:    544.58
-    Transfer/sec:    121.25KB
+        Latency     3.86ms    1.85ms  47.12ms   92.12%
+        Req/Sec   266.46     27.37   323.00     86.45%
+      31856 requests in 1.00m, 6.93MB read
+    Requests/sec:    530.54
+    Transfer/sec:    118.13KB
 
 Run in 10 threads:
 
     Running 1m test @ http://192.168.1.7:8080/
       10 threads and 10 connections
       Thread Stats   Avg      Stdev     Max   +/- Stdev
-        Latency    11.70ms    8.50ms  97.12ms   85.10%
-        Req/Sec    94.14     22.47   180.00     64.05%
-      56329 requests in 1.00m, 12.25MB read
-    Requests/sec:    937.78
-    Transfer/sec:    208.80KB
+        Latency    11.85ms    8.77ms  96.43ms   85.72%
+        Req/Sec    93.40     23.24   190.00     62.97%
+      55891 requests in 1.00m, 12.15MB read
+    Requests/sec:    929.98
+    Transfer/sec:    207.07KB
 
 ##Node.js
 
