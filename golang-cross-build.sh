@@ -62,3 +62,8 @@ build_one_arch $name $name linux arm
 
 # SHA sums
 cat "$name.shasum"
+
+# Homebrew sha256 of zips
+echo
+echo "Homebrew packages sha256 sums:"
+shasum -a 256 *.darwin.zip
