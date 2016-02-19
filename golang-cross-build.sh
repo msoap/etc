@@ -20,7 +20,7 @@ build_one_arch()
     export GOOS=$3
     export GOARCH=$4
     echo build: $GOOS/$GOARCH
-    go build -o $2
+    go build -ldflags="-w" -o $2
 
     zip_name="$name-$VERSION.$GOARCH.$GOOS.zip"
     zip -9 $zip_name $bin_name README.md LICENSE
