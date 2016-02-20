@@ -17,6 +17,10 @@ Install:
 	cd github-releases-stat
 	go build github-releases-stat.go
 
+Example:
+
+	github-releases-stat -summary coreos etcd
+
 Source:
 	https://gist.github.com/msoap/2c91d171d004fbcd0424
 
