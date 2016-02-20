@@ -45,7 +45,7 @@ func (assets releaseAssetList) Less(i, j int) bool {
 }
 
 func printOneRelease(release *github.RepositoryRelease) {
-	fmt.Printf("%s - %s\n", *release.Name, *release.HTMLURL)
+	fmt.Printf("%s (%s) - %s\n", *release.Name, *release.PublishedAt, *release.HTMLURL)
 	sort.Sort(sort.Reverse(releaseAssetList(release.Assets)))
 	for i, assets := range release.Assets {
 		fmt.Printf("  %d. %-35s: %d\n", i, *assets.Name, *assets.DownloadCount)
