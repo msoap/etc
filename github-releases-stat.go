@@ -5,7 +5,7 @@ Usage:
 
 	github-releases-stat [options] user repo_name
 	-all
-    	get all releases (otherwise show the latest only)
+		get all releases (otherwise show the latest only)
 	-summary
 		show summary downloads
 
