@@ -8,7 +8,8 @@ Usage:
 		get all releases (otherwise show the latest only)
 	-summary
 		show summary downloads
-
+	-json
+		JSON output
 
 Install:
 
@@ -28,6 +29,7 @@ Source:
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -41,6 +43,20 @@ import (
 const ItemsPerPage = 10
 
 type releaseAssetList []github.ReleaseAsset
+
+type AssetOut struct {
+	Name          string `json:"name"`
+	DownloadCount int    `json:"download_count"`
+}
+
+// ReleaseOut - struct for json
+type ReleaseOut struct {
+	Name        string     `json:"name"`
+	PublishedAt string     `json:"published_at"`
+	HTMLURL     string     `json:"html_url"`
+	TagName     string     `json:"tag_name"`
+	Assets      []AssetOut `json:"assets"`
+}
 
 func (assets releaseAssetList) Len() int      { return len(assets) }
 func (assets releaseAssetList) Swap(i, j int) { assets[i], assets[j] = assets[j], assets[i] }
@@ -56,6 +72,19 @@ func printOneRelease(release *github.RepositoryRelease) {
 	}
 }
 
+func outOneRelease(release *github.RepositoryRelease) (result ReleaseOut) {
+	result.Name = *release.Name
+	result.PublishedAt = (*release.PublishedAt).String()
+	result.HTMLURL = *release.HTMLURL
+	result.TagName = *release.TagName
+	result.Assets = []AssetOut{}
+	sort.Sort(sort.Reverse(releaseAssetList(release.Assets)))
+	for _, assets := range release.Assets {
+		result.Assets = append(result.Assets, AssetOut{*assets.Name, *assets.DownloadCount})
+	}
+	return result
+}
+
 func getSummary(assets []github.ReleaseAsset) (result int) {
 	for _, asset := range assets {
 		result += *asset.DownloadCount
@@ -64,9 +93,10 @@ func getSummary(assets []github.ReleaseAsset) (result int) {
 }
 
 func main() {
-	getAll, summary := false, false
+	getAll, summary, getJSON := false, false, false
 	flag.BoolVar(&getAll, "all", false, "get all releases")
 	flag.BoolVar(&summary, "summary", false, "show summary downloads")
+	flag.BoolVar(&getJSON, "json", false, "JSON output")
 	flag.Usage = func() {
 		fmt.Printf("%s [options] user repo_name\n", os.Args[0])
 		flag.PrintDefaults()
@@ -79,9 +109,9 @@ func main() {
 	}
 
 	client := github.NewClient(nil)
+	releases := []github.RepositoryRelease{}
 
 	if getAll {
-		releases := []github.RepositoryRelease{}
 		nextPage := 1
 		for nextPage != 0 {
 			releasesChunk, response, err := client.Repositories.ListReleases(flag.Args()[0], flag.Args()[1], &github.ListOptions{Page: nextPage, PerPage: ItemsPerPage})
@@ -92,26 +122,39 @@ func main() {
 			nextPage = response.NextPage
 		}
 
-		allDowmloads := 0
-		for _, release := range releases {
-			printOneRelease(&release)
-			allDowmloads += getSummary(release.Assets)
-		}
-
-		if summary {
-			fmt.Printf("\n%d downloads\n", allDowmloads)
-		}
-
 	} else {
 
 		release, _, err := client.Repositories.GetLatestRelease(flag.Args()[0], flag.Args()[1])
 		if err != nil {
 			log.Fatal(err)
 		}
-		printOneRelease(release)
-		if summary {
-			fmt.Printf("\n%d downloads\n", getSummary(release.Assets))
-		}
+		releases = append(releases, *release)
 
+	}
+
+	allDownloads := 0
+	jsonAllOut := struct {
+		AllDownloads int          `json:"all_downloads"`
+		Releases     []ReleaseOut `json:"releases"`
+	}{}
+	for _, release := range releases {
+		if getJSON {
+			releaseOut := outOneRelease(&release)
+			jsonAllOut.Releases = append(jsonAllOut.Releases, releaseOut)
+		} else {
+			printOneRelease(&release)
+		}
+		allDownloads += getSummary(release.Assets)
+	}
+	if summary && !getJSON {
+		fmt.Printf("\n%d downloads\n", allDownloads)
+	}
+	if getJSON {
+		jsonAllOut.AllDownloads = allDownloads
+		json, err := json.MarshalIndent(jsonAllOut, "", "  ")
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(string(json))
 	}
 }
