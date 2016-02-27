@@ -2,9 +2,6 @@
 
 # Golang: build binaries for Linux/OS X/Windows x amd64/386/arm
 #
-# for crossbuild:
-# brew install go --with-cc-common
-#
 # usage:
 #   golang-cross-build.sh program_name
 #
