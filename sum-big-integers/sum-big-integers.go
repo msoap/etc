@@ -3,7 +3,7 @@ read all integers from stdin and out summation of it
 echo "123 456 789" | sum-big-integers
 
 Install:
-	go get -u https://github.com/msoap/etc/sum-big-integers
+	go get -u github.com/msoap/etc/sum-big-integers
 
 */
 package main
