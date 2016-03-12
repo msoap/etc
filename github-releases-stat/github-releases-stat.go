@@ -13,14 +13,14 @@ Usage:
 
 Install:
 
-	go get -u https://github.com/msoap/etc/github-releases-stat/
+	go get -u github.com/msoap/etc/github-releases-stat/
 
 Example:
 
 	github-releases-stat -summary coreos etcd
 
 Source:
-	https://github.com/msoap/etc/github-releases-stat/
+	https://github.com/msoap/etc/tree/master/github-releases-stat
 
 */
 package main
