@@ -7,7 +7,7 @@
 #
 # version get from last git tag
 #
-# https://github.com/msoap/etc/golang-cross-build/
+# https://github.com/msoap/etc/tree/master/golang-cross-build/
 
 # build_one_arch $name $bin_name $GOOS $GOARCH
 build_one_arch()
