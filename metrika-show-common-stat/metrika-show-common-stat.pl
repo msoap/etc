@@ -10,7 +10,7 @@ Show common statistic from Yandex.metrika
 
 uses API from: http://api.yandex.com/metrika/
 
-install from: https://gist.github.com/msoap/3772872
+install from: https://github.com/msoap/etc/metrika-show-common-stat/
 
 =head1 SYNOPSIS
 

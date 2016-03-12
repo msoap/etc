@@ -13,17 +13,14 @@ Usage:
 
 Install:
 
-	go get -u github.com/google/go-github/github
-	git clone https://gist.github.com/2c91d171d004fbcd0424.git github-releases-stat
-	cd github-releases-stat
-	go build github-releases-stat.go
+	go get -u https://github.com/msoap/etc/github-releases-stat/
 
 Example:
 
 	github-releases-stat -summary coreos etcd
 
 Source:
-	https://gist.github.com/msoap/2c91d171d004fbcd0424
+	https://github.com/msoap/etc/github-releases-stat/
 
 */
 package main

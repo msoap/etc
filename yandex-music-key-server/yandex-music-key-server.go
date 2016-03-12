@@ -24,7 +24,7 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "F9", function()
 end)
 
 Download from:
-	https://gist.github.com/msoap/acd3da6452e9e36e48e0
+	https://github.com/msoap/etc/yandex-music-key-server
 
 */
 package main
