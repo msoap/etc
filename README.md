@@ -12,3 +12,4 @@ Little things moved from [github gists](https://gist.github.com/msoap).
   * [Go vs Perl memory usage](./go-vs-perl-memory-usage)
   * [sum-big-integers.go](./sum-big-integers) - summation integers from STDIN
   * [script.go](./script-go) - example run Go program as script
+  * [golang-cross-build.sh](./golang-cross-build) - Golang crossbuild binaries script
