@@ -13,3 +13,4 @@ Little things moved from [github gists](https://gist.github.com/msoap).
   * [sum-big-integers.go](./sum-big-integers) - summation integers from STDIN
   * [script.go](./script-go) - example run Go program as script
   * [yandex-music-key-server.go](./yandex-music-key-server) - server for handle global key for Yandex.Music service
+  * [github-releases-stat.go](./github-releases-stat) - get statistic of downloads from github releases
