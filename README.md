@@ -10,3 +10,4 @@ Little things moved from [github gists](https://gist.github.com/msoap).
   * [yandex-fotki-get-album-fotos.pl](./yandex-fotki-get-album-fotos) - download photos from fotki.yandex.ru album
   * [RPi benchmark](./raspberry-pi-httpd-benchmark) - Raspberry Pi httpd benchmark with wrk
   * [Go vs Perl memory usage](./go-vs-perl-memory-usage)
+  * [http-honeypot.go](./http-honeypot) - Honeypot for http tracking
