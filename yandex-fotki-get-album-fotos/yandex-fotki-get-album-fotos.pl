@@ -2,7 +2,7 @@
 
 =head1 DESCRIPTION
 
-https://github.com/msoap/etc/yandex-fotki-get-album-fotos
+https://github.com/msoap/etc/tree/master/yandex-fotki-get-album-fotos
 
 Download all photos from fotki.yandex.ru album.
 
@@ -10,7 +10,7 @@ Usage:
     yandex-fotki-get-album-fotos.pl http://fotki.yandex.ru/users/user_name/album/12345678/
 
 Install:
-    curl https://github.com/msoap/etc/raw/master/yandex-fotki-get-album-fotos/yandex-fotki-get-album-fotos.pl > ~/bin/yandex-fotki-get-album-fotos.pl
+    curl https://raw.githubusercontent.com/msoap/etc/master/yandex-fotki-get-album-fotos/yandex-fotki-get-album-fotos.pl > ~/bin/yandex-fotki-get-album-fotos.pl
     chmod 744 ~/bin/yandex-fotki-get-album-fotos.pl
 
 =cut
