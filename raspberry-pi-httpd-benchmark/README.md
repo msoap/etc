@@ -9,9 +9,9 @@ All:
                    Go/fasthttp (10 thr): 930.0 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
                          Nginx (10 thr): 826.1 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
                          Nginx ( 2 thr): 647.3 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                            Go (10 thr): 606.3 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+                            Go (10 thr): 621.1 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
                    Go/fasthttp ( 2 thr): 530.5 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                            Go ( 2 thr): 377.4 ■■■■■■■■■■■■■■■■■■■■■■■■■
+                            Go ( 2 thr): 392.3 ■■■■■■■■■■■■■■■■■■■■■■■■■■
                        Node.js ( 2 thr): 199.8 ■■■■■■■■■■■■■
                          Caddy (10 thr): 199.1 ■■■■■■■■■■■■■
                        Node.js (10 thr): 195.1 ■■■■■■■■■■■■■
@@ -27,7 +27,7 @@ Run in 10 threads:
 
     Go/fasthttp (10 thr): 930.0 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
           Nginx (10 thr): 826.1 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-             Go (10 thr): 606.3 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+             Go (10 thr): 621.1 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
           Caddy (10 thr): 199.1 ■■■■■■■■■■■■■
         Node.js (10 thr): 195.1 ■■■■■■■■■■■■■
          Python (10 thr):  95.5 ■■■■■■
@@ -36,7 +36,7 @@ Run in 2 threads:
 
                          Nginx ( 2 thr): 647.3 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
                    Go/fasthttp ( 2 thr): 530.5 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-                            Go ( 2 thr): 377.4 ■■■■■■■■■■■■■■■■■■■■■■■■■
+                            Go ( 2 thr): 392.3 ■■■■■■■■■■■■■■■■■■■■■■■■■■
                        Node.js ( 2 thr): 199.8 ■■■■■■■■■■■■■
                          Caddy ( 2 thr): 177.6 ■■■■■■■■■■■
                         Python ( 2 thr): 122.9 ■■■■■■■■
@@ -48,9 +48,9 @@ Run in 2 threads:
 
 For all, 10 and 2 threads:
 
-    cat README.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 15)}}'
-    cat README.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/ && $thr == 10) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 15)}}'
-    cat README.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/ && $thr == 2) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 15)}}'
+    cat *.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 15)}}'
+    cat *.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/ && $thr == 10) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 15)}}'
+    cat *.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/ && $thr == 2) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 15)}}'
 
 ####wrk command line
 
@@ -131,22 +131,22 @@ version: go version go1.6 linux/arm
     Running 1m test @ http://192.168.1.7:8080/
       2 threads and 2 connections
       Thread Stats   Avg      Stdev     Max   +/- Stdev
-        Latency     5.38ms    2.41ms  47.12ms   78.42%
-        Req/Sec   189.64     21.68   303.00     77.49%
-      22679 requests in 1.00m, 4.93MB read
-    Requests/sec:    377.42
-    Transfer/sec:     84.04KB
+        Latency     5.16ms    2.30ms  52.61ms   79.53%
+        Req/Sec   197.01     20.27   310.00     76.92%
+      23576 requests in 1.00m, 5.13MB read
+    Requests/sec:    392.27
+    Transfer/sec:     87.34KB
 
 Run in 10 threads:
 
     Running 1m test @ http://192.168.1.7:8080/
       10 threads and 10 connections
       Thread Stats   Avg      Stdev     Max   +/- Stdev
-        Latency    16.74ms    7.80ms  97.04ms   72.18%
-        Req/Sec    60.75     16.59   111.00     69.71%
-      36420 requests in 1.00m, 7.92MB read
-    Requests/sec:    606.27
-    Transfer/sec:    134.99KB
+        Latency    16.44ms    8.30ms 119.26ms   75.26%
+        Req/Sec    62.29     17.24   210.00     70.67%
+      37331 requests in 1.00m, 8.12MB read
+    Requests/sec:    621.12
+    Transfer/sec:    138.30KB
 
 ##Go/fasthttp
 
