@@ -48,9 +48,9 @@ Run in 2 threads:
 
 For all, 10 and 2 threads:
 
-    cat Raspberry*.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 15)}}'
-    cat Raspberry*.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/ && $thr == 10) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 15)}}'
-    cat Raspberry*.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/ && $thr == 2) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 15)}}'
+    cat README.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 15)}}'
+    cat README.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/ && $thr == 10) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 15)}}'
+    cat README.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/ && $thr == 2) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 15)}}'
 
 ####wrk command line
 
