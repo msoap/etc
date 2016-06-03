@@ -22,7 +22,7 @@ sub main {
     my $json = join("", <STDIN>);
     my $api = from_json($json);
     my $swagger = to_swagger($api);
-    print Dump($swagger);
+    print Dump({schema => $swagger});
 }
 
 # -----------------------------------------------------------------------------
@@ -48,10 +48,13 @@ sub to_swagger {
         $swagger = {type => "integer"};
     } elsif (ref($api_item) eq '' && $api_item =~ /^-?\d+(.\d+)?$/) {
         # float
-        $swagger = {type => "float"};
+        $swagger = {type => "number"};
     } elsif (ref($api_item) eq '') {
         # string
         $swagger = {type => "string"};
+    } elsif (ref($api_item) eq 'JSON::PP::Boolean') {
+        # boolean
+        $swagger = {type => "boolean"};
     }
 
     return $swagger;
