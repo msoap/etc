@@ -6,6 +6,8 @@
 /_/   \_\____/ \____|___|___|         /_/   \_\_|   \__|
 ```
 
+[![Docker Pulls](https://img.shields.io/docker/pulls/msoap/ascii-art.svg?maxAge=3600)](https://hub.docker.com/r/msoap/ascii-art/)
+
 ## Get:
 
     docker pull msoap/ascii-art
