@@ -1,0 +1,52 @@
+FROM golang
+
+ENV FIGLET=figlet-2.2.5
+ENV COWSAY=cowsay-3.03
+
+# install figlet
+RUN wget ftp://ftp.figlet.org/pub/figlet/program/unix/${FIGLET}.tar.gz -O /tmp/${FIGLET}.tar.gz \
+    && chdir /tmp \
+    && tar -xzf /tmp/${FIGLET}.tar.gz \
+    && chdir /tmp/${FIGLET} \
+    && make install
+
+# install cowsay
+RUN wget https://web.archive.org/web/20120225123719/http://www.nog.net/~tony/warez/${COWSAY}.tar.gz -O /tmp/${COWSAY}.tar.gz \
+    && chdir /tmp \
+    && tar -xzf /tmp/${COWSAY}.tar.gz \
+    && chdir /tmp/${COWSAY} \
+    && sh install.sh
+
+# install shell2http
+RUN GOPATH=/go_app go get github.com/msoap/shell2http \
+    && mv /go_app/bin/shell2http /usr/local/bin/shell2http
+
+# create archive with installed applications
+RUN bash -c 'tar -czf /tmp/apps_dist.tar.gz /usr/local/bin/{shell2http,chkfont,figlet,figlist,showfigfonts,cowsay,cowthink} /usr/local/share/{figlet,cows,man}'
+
+ATTACH
+EXPORT /tmp/apps_dist.tar.gz
+
+# -------
+FROM debian:jessie
+
+IMPORT apps_dist.tar.gz /tmp/
+
+RUN chdir /usr \
+    && tar -xzf /tmp/apps_dist.tar.gz --strip-components 1 \
+    && rm /tmp/apps_dist.tar.gz
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        man \
+        less \
+        perl \
+    && rm -rf /var/lib/apt/lists/*
+
+MOUNT ./server.sh:/tmp/server.sh
+RUN cp /tmp/server.sh /usr/local/bin/server.sh
+CMD server.sh
+
+EXPOSE 8080
+
+PUSH msoap/ascii-art:latest
