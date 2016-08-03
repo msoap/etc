@@ -106,7 +106,7 @@ func main() {
 	}
 
 	client := github.NewClient(nil)
-	releases := []github.RepositoryRelease{}
+	releases := []*github.RepositoryRelease{}
 
 	if getAll {
 		nextPage := 1
@@ -125,7 +125,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		releases = append(releases, *release)
+		releases = append(releases, release)
 
 	}
 
@@ -136,10 +136,10 @@ func main() {
 	}{}
 	for _, release := range releases {
 		if getJSON {
-			releaseOut := outOneRelease(&release)
+			releaseOut := outOneRelease(release)
 			jsonAllOut.Releases = append(jsonAllOut.Releases, releaseOut)
 		} else {
-			printOneRelease(&release)
+			printOneRelease(release)
 		}
 		allDownloads += getSummary(release.Assets)
 	}
