@@ -41,6 +41,7 @@ const ItemsPerPage = 10
 
 type releaseAssetList []github.ReleaseAsset
 
+// AssetOut - one asset with stat
 type AssetOut struct {
 	Name          string `json:"name"`
 	DownloadCount int    `json:"download_count"`
