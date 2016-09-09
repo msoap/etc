@@ -19,7 +19,7 @@ import (
 	"runtime"
 )
 
-const buffer_len = 65536
+const bufferLen = 65536
 
 //-------------------------------------------------------------------
 func isNumericSymbol(symbol byte) bool {
@@ -37,8 +37,8 @@ func numbersSummator(input <-chan []string, output chan<- *big.Int) {
 	sum := new(big.Int)
 
 	for line := range input {
-		for _, integer_str := range line {
-			i.SetString(integer_str, 10)
+		for _, integerStr := range line {
+			i.SetString(integerStr, 10)
 			sum.Add(sum, i)
 		}
 	}
@@ -49,17 +49,17 @@ func numbersSummator(input <-chan []string, output chan<- *big.Int) {
 //-------------------------------------------------------------------
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	buffer := make([]byte, buffer_len)
-	prev_str_num := ""
+	buffer := make([]byte, bufferLen)
+	prevStrNum := ""
 
-	cnt_parallels := runtime.NumCPU()
+	cntParallels := runtime.NumCPU()
 
-	input := make(chan []string, cnt_parallels)
+	input := make(chan []string, cntParallels)
 	output := make(chan *big.Int)
 	re := regexp.MustCompile(`\d+`)
 
-	runtime.GOMAXPROCS(cnt_parallels)
-	for i := 1; i <= cnt_parallels; i++ {
+	runtime.GOMAXPROCS(cntParallels)
+	for i := 1; i <= cntParallels; i++ {
 		go numbersSummator(input, output)
 	}
 
@@ -71,37 +71,37 @@ func main() {
 			log.Fatalln("reading standard input error:", err)
 		} else if n > 0 {
 			buffer = buffer[:n]
-			nums_in_line := re.FindAllString(string(buffer), -1)
+			numsInLine := re.FindAllString(string(buffer), -1)
 
 			// add previous num
-			if prev_str_num != "" && isNumericSymbol(buffer[0]) {
-				nums_in_line[0] = prev_str_num + nums_in_line[0]
-			} else if prev_str_num != "" {
-				input <- []string{prev_str_num}
+			if prevStrNum != "" && isNumericSymbol(buffer[0]) {
+				numsInLine[0] = prevStrNum + numsInLine[0]
+			} else if prevStrNum != "" {
+				input <- []string{prevStrNum}
 			}
 
 			// save last num
 			if isNumericSymbol(buffer[n-1]) {
-				prev_str_num = nums_in_line[len(nums_in_line)-1]
-				nums_in_line = nums_in_line[:len(nums_in_line)-1]
+				prevStrNum = numsInLine[len(numsInLine)-1]
+				numsInLine = numsInLine[:len(numsInLine)-1]
 			} else {
-				prev_str_num = ""
+				prevStrNum = ""
 			}
 
-			if len(nums_in_line) > 0 {
-				input <- nums_in_line
+			if len(numsInLine) > 0 {
+				input <- numsInLine
 			}
 		}
 	}
 
-	if prev_str_num != "" {
-		input <- []string{prev_str_num}
+	if prevStrNum != "" {
+		input <- []string{prevStrNum}
 	}
 
 	close(input)
 
 	result := new(big.Int)
-	for i := 1; i <= cnt_parallels; i++ {
+	for i := 1; i <= cntParallels; i++ {
 		result.Add(result, <-output)
 	}
 
