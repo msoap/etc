@@ -24,7 +24,7 @@ import (
 	"strings"
 )
 
-func get_header(headers map[string][]string, name string) string {
+func getHeader(headers map[string][]string, name string) string {
 	result, ok := headers[name]
 	if !ok {
 		result = []string{"-"}
@@ -46,12 +46,12 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "")
 
-		ua := get_header(r.Header, "User-Agent")
-		referer := get_header(r.Header, "Referer")
+		ua := getHeader(r.Header, "User-Agent")
+		referer := getHeader(r.Header, "Referer")
 
-		log_string := strings.Join([]string{r.Method, r.Host, r.URL.Path, ua, referer}, "\t")
-		log.Println(log_string)
-		fmt.Println(log_string)
+		logString := strings.Join([]string{r.Method, r.Host, r.URL.Path, ua, referer}, "\t")
+		log.Println(logString)
+		fmt.Println(logString)
 
 		if r.URL.Path == "/exit_now" && r.Host == "localhost" {
 			end <- true
@@ -69,11 +69,11 @@ func main() {
 		// generate SSL self-signed sertificate:
 		//	   go run /usr/local/Cellar/go/1.4/libexec/src/crypto/tls/generate_cert.go --host="localhost"
 		// but dont work because SSL :(
-		cert_name, key_name := "cert.pem", "key.pem"
-		_, err_cert := os.Stat(cert_name)
-		_, err_key := os.Stat(key_name)
-		if err_cert == nil && err_key == nil {
-			err := http.ListenAndServeTLS("127.0.0.1:443", cert_name, key_name, nil)
+		certName, keyName := "cert.pem", "key.pem"
+		_, errCert := os.Stat(certName)
+		_, errKey := os.Stat(keyName)
+		if errCert == nil && errKey == nil {
+			err := http.ListenAndServeTLS("127.0.0.1:443", certName, keyName, nil)
 			if err != nil {
 				fmt.Println(err)
 			}

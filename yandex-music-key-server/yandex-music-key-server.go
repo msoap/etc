@@ -1,5 +1,7 @@
+package main
+
 /*
-	Server for handle global key for Yandex.Music service
+Server for handle global key for Yandex.Music service
 
 bookmarklet:
 	javascript:(function(){var js=document.createElement("script");document.body.appendChild(js);js.src='https://localhost:8900/script.js'})()
@@ -27,7 +29,6 @@ Download from:
 	https://github.com/msoap/etc/tree/master/yandex-music-key-server
 
 */
-package main
 
 import (
 	"fmt"
@@ -113,19 +114,19 @@ func main() {
 		fmt.Fprint(rw, JS)
 	})
 
-	websocket_connected := false
+	websocketConnected := false
 
 	for _, action := range [...]string{"pause", "prev", "next"} {
 		action := action
 		http.HandleFunc("/"+action, func(rw http.ResponseWriter, req *http.Request) {
 			log.Printf("%s %s %s", req.Method, req.URL.Path, req.UserAgent())
 			fmt.Fprint(rw, action+" ok")
-			if websocket_connected {
+			if websocketConnected {
 				go func() {
 					events <- action
 				}()
 			} else {
-				log.Print("websocket isnt connected")
+				log.Print("websocket isn't connected")
 			}
 		})
 	}
@@ -139,11 +140,11 @@ func main() {
 			log.Print(err)
 			return
 		}
-		log.Print("Recived: ", string(message[:n]))
+		log.Print("Received: ", string(message[:n]))
 
-		websocket_connected = true
+		websocketConnected = true
 		defer func() {
-			websocket_connected = false
+			websocketConnected = false
 		}()
 
 		for {
