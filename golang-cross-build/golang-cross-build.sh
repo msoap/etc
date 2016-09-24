@@ -19,7 +19,7 @@ build_one_arch()
     echo build: $GOOS/$GOARCH
     go build -ldflags="-w" -o $2
 
-    zip_name="$name-$VERSION.$GOARCH.$GOOS.zip"
+    zip_name="$name-$VERSION.$GOOS.$GOARCH.zip"
     zip -9 $zip_name $bin_name README.md LICENSE
 
     echo "$zip_name/$bin_name $(cat $bin_name | shasum | awk '{print $1}')" >> $name.shasum
@@ -63,4 +63,4 @@ cat "$name.shasum"
 # Homebrew sha256 of zips
 echo
 echo "Homebrew packages sha256 sums:"
-shasum -a 256 *.darwin.zip
+shasum -a 256 *.darwin.*.zip
