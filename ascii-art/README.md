@@ -27,6 +27,11 @@
     # man:
     docker run -it --rm msoap/ascii-art man cowsay
 
+## neo-cowsay:
+
+    docker run -it --rm msoap/ascii-art neo-cowsay --rainbow Hello
+    docker run -it --rm msoap/ascii-art neo-cowthink --aurora Hello
+
 ## figlet:
 
     docker run --rm msoap/ascii-art figlet 'Hello'
@@ -42,3 +47,9 @@
 # http-server with cowsay and figlet:
 
     docker run -it --rm -p 8080:8080 msoap/ascii-art
+
+# Links
+
+  * [cowsay source](https://web.archive.org/web/20111224053105/http://www.nog.net/~tony/warez/cowsay.shtml)
+  * [Neo-cowsay](https://github.com/Code-Hex/Neo-cowsay)
+  * [figlet](http://www.figlet.org)

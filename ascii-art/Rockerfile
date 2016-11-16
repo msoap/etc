@@ -17,12 +17,17 @@ RUN wget https://web.archive.org/web/20120225123719/http://www.nog.net/~tony/war
     && chdir /tmp/${COWSAY} \
     && sh install.sh
 
-# install shell2http
-RUN GOPATH=/go_app go get github.com/msoap/shell2http \
-    && mv /go_app/bin/shell2http /usr/local/bin/shell2http
+# install shell2http, new-cowsay
+ENV GOPATH=/go_app
+RUN go get github.com/msoap/shell2http \
+    && go get github.com/Code-Hex/Neo-cowsay/cmd/cowsay \
+    && go get github.com/Code-Hex/Neo-cowsay/cmd/cowthink \
+    && mv /go_app/bin/shell2http /usr/local/bin/shell2http \
+    && mv /go_app/bin/cowsay /usr/local/bin/neo-cowsay \
+    && mv /go_app/bin/cowthink /usr/local/bin/neo-cowthink
 
 # create archive with installed applications
-RUN bash -c 'tar -czf /tmp/apps_dist.tar.gz /usr/local/bin/{shell2http,chkfont,figlet,figlist,showfigfonts,cowsay,cowthink} /usr/local/share/{figlet,cows,man}'
+RUN bash -c 'tar -czf /tmp/apps_dist.tar.gz /usr/local/bin/{shell2http,chkfont,figlet,figlist,showfigfonts,cowsay,cowthink,neo-cowsay,neo-cowthink} /usr/local/share/{figlet,cows,man}'
 
 ATTACH
 EXPORT /tmp/apps_dist.tar.gz
