@@ -32,6 +32,8 @@
     docker run -it --rm msoap/ascii-art neo-cowsay --rainbow Hello
     docker run -it --rm msoap/ascii-art neo-cowthink --aurora Hello
 
+<img width="607" alt="screen shot 2016-11-16 at 10 40 32 pm" src="https://cloud.githubusercontent.com/assets/844117/20362773/ce109964-ac4d-11e6-96b0-b93bf798f17a.png">
+
 ## figlet:
 
     docker run --rm msoap/ascii-art figlet 'Hello'
