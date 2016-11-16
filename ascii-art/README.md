@@ -12,6 +12,10 @@
 
     docker pull msoap/ascii-art
 
+## Build image:
+
+    rocker build
+
 ## cowsay:
 
     docker run --rm msoap/ascii-art cowsay 'Hello'
