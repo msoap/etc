@@ -50,6 +50,13 @@
     # man:
     docker run -it --rm msoap/ascii-art man figlet
 
+# endoh1
+
+    # get files list
+    docker run --rm -it msoap/ascii-art sh -c 'ls /usr/local/share/endoh1/*'
+    # show ASCII fluid simulation
+    docker run --rm -it msoap/ascii-art sh -c 'endoh1_color < /usr/local/share/endoh1/tanada.txt'
+
 # http-server with cowsay and figlet:
 
     docker run -it --rm -p 8080:8080 msoap/ascii-art
@@ -59,3 +66,4 @@
   * [cowsay source](https://web.archive.org/web/20111224053105/http://www.nog.net/~tony/warez/cowsay.shtml)
   * [Neo-cowsay](https://github.com/Code-Hex/Neo-cowsay)
   * [figlet](http://www.figlet.org)
+  * [Most complex ASCII fluid](http://www.ioccc.org/2012/endoh1/hint.html) / [youtube](https://www.youtube.com/watch?v=QMYfkOtYYlg)

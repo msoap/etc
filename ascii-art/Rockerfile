@@ -26,8 +26,15 @@ RUN go get github.com/msoap/shell2http \
     && mv /go_app/bin/cowsay /usr/local/bin/neo-cowsay \
     && mv /go_app/bin/cowthink /usr/local/bin/neo-cowthink
 
+# install endoh1 (http://www.ioccc.org/2012/endoh1/hint.html)
+RUN chdir /tmp \
+    && wget -r -l 1 http://www.ioccc.org/2012/endoh1/ \
+    && chdir ./www.ioccc.org/2012/endoh1 \
+    && make endoh1 \
+    && make endoh1_color
+
 # create archive with installed applications
-RUN bash -c 'tar -czf /tmp/apps_dist.tar.gz /usr/local/bin/{shell2http,chkfont,figlet,figlist,showfigfonts,cowsay,cowthink,neo-cowsay,neo-cowthink} /usr/local/share/{figlet,cows,man}'
+RUN bash -c 'tar -czf /tmp/apps_dist.tar.gz /usr/local/bin/{shell2http,chkfont,figlet,figlist,showfigfonts,cowsay,cowthink,neo-cowsay,neo-cowthink} /usr/local/share/{figlet,cows,man} /tmp/www.ioccc.org/2012/endoh1/{endoh1,endoh1_color} /tmp/www.ioccc.org/2012/endoh1/*.c /tmp/www.ioccc.org/2012/endoh1/*.txt'
 
 ATTACH
 EXPORT /tmp/apps_dist.tar.gz
@@ -39,7 +46,11 @@ IMPORT apps_dist.tar.gz /tmp/
 
 RUN chdir /usr \
     && tar -xzf /tmp/apps_dist.tar.gz --strip-components 1 \
-    && rm /tmp/apps_dist.tar.gz
+    && rm /tmp/apps_dist.tar.gz \
+    && mv /usr/www.ioccc.org/2012/endoh1/endoh1 /usr/www.ioccc.org/2012/endoh1/endoh1_color /usr/local/bin/ \
+    && mkdir -p /usr/local/share/endoh1 \
+    && mv /usr/www.ioccc.org/2012/endoh1/*.c /usr/www.ioccc.org/2012/endoh1/*.txt /usr/local/share/endoh1/ \
+    && rm -rf /usr/www.ioccc.org/
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
