@@ -57,6 +57,8 @@
     # show ASCII fluid simulation
     docker run --rm -it msoap/ascii-art sh -c 'endoh1_color < /usr/local/share/endoh1/tanada.txt'
 
+<img width="634" alt="screen shot 2016-11-27 at 12 36 42 am" src="https://cloud.githubusercontent.com/assets/844117/20644069/1e444536-b43a-11e6-8dc0-aa9f53cea03a.png">
+
 # http-server with cowsay and figlet:
 
     docker run -it --rm -p 8080:8080 msoap/ascii-art
