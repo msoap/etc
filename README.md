@@ -16,3 +16,4 @@ Little things moved from [github gists](https://gist.github.com/msoap).
   * [github-releases-stat.go](./github-releases-stat) - get statistic of downloads from github releases
   * [api_json2swagger_yaml.pl](./api_json2swagger_yaml) - generate swagger YAML from JSON API result
   * [ASCII-art](./ascii-art) - Docker image for figlet and cowsay
+  * [golang tip](./Docker container for latest Go compiler (tip)) - Docker container for latest Go compiler (tip)
