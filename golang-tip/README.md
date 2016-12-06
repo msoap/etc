@@ -2,6 +2,7 @@
 
 ###Build:
 
+    curl https://raw.githubusercontent.com/msoap/etc/master/golang-tip/Dockerfile > Dockerfile
     docker build -t golang:tip .
 
 ###Run:
