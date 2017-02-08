@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Golang: build binaries for Linux/OS X/Windows x amd64/386/arm
 #
