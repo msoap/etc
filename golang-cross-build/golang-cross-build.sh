@@ -69,4 +69,4 @@ cat "$name.shasum"
 # Homebrew sha256 of zips
 echo
 echo "Homebrew packages sha256 sums:"
-shasum -a 256 *.darwin.*.zip
+shasum -a 256 *.darwin.*.tar.gz
