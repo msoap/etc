@@ -19,13 +19,13 @@ build_one_arch()
     echo build: $GOOS/$GOARCH
     go build -ldflags="-w" -o $2
 
-    if [ $GOOS == linux ]
+    if [ $GOOS == windows ]
     then
-        zip_name="$name-$VERSION.$GOOS.$GOARCH.tar.gz"
-        tar -czf $zip_name $bin_name README.md LICENSE
-    else
         zip_name="$name-$VERSION.$GOOS.$GOARCH.zip"
         zip -9 $zip_name $bin_name README.md LICENSE
+    else
+        zip_name="$name-$VERSION.$GOOS.$GOARCH.tar.gz"
+        tar -czf $zip_name $bin_name README.md LICENSE *.1
     fi
 
     echo "$zip_name/$bin_name $(cat $bin_name | shasum | awk '{print $1}')" >> $name.shasum
