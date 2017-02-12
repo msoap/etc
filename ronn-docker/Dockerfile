@@ -1,3 +1,4 @@
+# docker build -t ruby-ronn .
 FROM ruby:latest
 
 ENV RUBYOPT="-KU -E utf-8:utf-8"
