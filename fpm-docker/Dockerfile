@@ -1,4 +1,4 @@
-# docker build -t ruby-fpm .
+# docker build -t msoap/ruby-fpm .
 FROM ruby:alpine
 
 RUN apk add --no-cache build-base tar

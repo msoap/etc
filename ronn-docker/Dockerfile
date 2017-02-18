@@ -1,4 +1,4 @@
-# docker build -t ruby-ronn .
+# docker build -t msoap/ruby-ronn .
 FROM ruby:alpine
 
 ENV RUBYOPT="-KU -E utf-8:utf-8"
