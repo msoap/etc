@@ -1,6 +1,6 @@
 # docker build -t ruby-ronn .
-FROM ruby:latest
+FROM ruby:alpine
 
 ENV RUBYOPT="-KU -E utf-8:utf-8"
-RUN apt-get update && apt-get install groff -y
+RUN apk add --no-cache build-base groff
 RUN gem install ronn
