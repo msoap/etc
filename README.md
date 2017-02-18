@@ -25,3 +25,4 @@ Little things moved from [github gists](https://gist.github.com/msoap).
   * [golang tip](./golang-tip) - Docker image for the latest Go compiler (tip)
   * [ruby ronn](./ronn-docker) - Docker image for convert markdown files to man-pages
   * [ruby fpm](./fpm-docker) - Docker image for fpm, tool for create deb-package from dir
+  * [alpine test](./alpine-test) - Docker image with Alpine linux for test purposes
