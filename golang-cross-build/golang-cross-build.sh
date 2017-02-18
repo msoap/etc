@@ -16,13 +16,11 @@
 #
 # https://github.com/msoap/etc/tree/master/golang-cross-build/
 
-# build_one_arch $name $path $GOOS $GOARCH
+# build_one_arch $GOOS $GOARCH
 build_one_arch()
 {
-    APP_NAME=$1
-    SRC_PATH=$2
-    export GOOS=$3
-    export GOARCH=$4
+    export GOOS=$1
+    export GOARCH=$2
     APP_NAME_EXE=$APP_NAME
     echo build: $GOOS/$GOARCH
     go get -d -t ./...
@@ -41,8 +39,14 @@ build_one_arch()
         # build deb package (need install fpm)
         if [[ $(which fpm) ]] && [[ $GOOS == linux ]] && [[ $GOARCH == amd64 ]]; then
             # or with docker: docker run -it --rm -v $PWD:/app -w /app ruby-fpm fpm ...
-            fpm -s dir -t deb --name $APP_NAME -v $VERSION ./$APP_NAME=/usr/bin/ ./$APP_NAME.1=/usr/share/man/man1/ LICENSE=/usr/share/doc/$APP_NAME/copyright README.md=/usr/share/doc/$APP_NAME/ && \
-              echo "$(ls *.deb) $(cat *.deb | shasum | awk '{print $1}')" >> $APP_NAME.shasum
+            fpm -s dir -t deb --force --name $APP_NAME -v $VERSION \
+                --license=$(head -1 LICENSE) \
+                --maintainer="$APP_MAINTAINER" \
+                ./$APP_NAME=/usr/bin/ \
+                ./$APP_NAME.1=/usr/share/man/man1/ \
+                LICENSE=/usr/share/doc/$APP_NAME/copyright \
+                README.md=/usr/share/doc/$APP_NAME/ && \
+            echo "$(ls *.deb) $(cat *.deb | shasum | awk '{print $1}')" >> $APP_NAME.shasum
         fi
     fi
 
@@ -53,31 +57,33 @@ build_one_arch()
 VERSION=$(git tag 2>/dev/null | grep -E '^[0-9]+' | tail -1)
 VERSION=${VERSION:-0.1}
 
-name=$1
-if [ -z $name ]
+APP_NAME=$1
+APP_MAINTAINER=$(git show HEAD | awk '$1 == "Author:" {print $2 " " $3 " " $4}')
+
+if [ -z $APP_NAME ]
 then
     echo "Need name: $0 name"
     exit 1
 fi
 
-cmd_path=${2:-./}
+SRC_PATH=${2:-./}
 
-> "$name.shasum"
+> "$APP_NAME.shasum"
 
 for GOOS in linux darwin windows
 do
     for GOARCH in amd64 386
     do
-        build_one_arch $name $cmd_path $GOOS $GOARCH
+        build_one_arch $GOOS $GOARCH
     done
 done
 
 # ARM
-GOARM=6 build_one_arch $name $cmd_path linux arm
-build_one_arch $name $cmd_path linux arm64
+GOARM=6 build_one_arch linux arm
+build_one_arch linux arm64
 
 # SHA sums
-cat "$name.shasum"
+cat "$APP_NAME.shasum"
 
 # Homebrew sha256 of zips
 echo
