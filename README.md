@@ -15,5 +15,13 @@ Little things moved from [github gists](https://gist.github.com/msoap).
   * [yandex-music-key-server.go](./yandex-music-key-server) - server for handle global key for Yandex.Music service
   * [github-releases-stat.go](./github-releases-stat) - get statistic of downloads from github releases
   * [api_json2swagger_yaml.pl](./api_json2swagger_yaml) - generate swagger YAML from JSON API result
+  * [देवनागरी-में-नंबर.go](./to-devanagari) - script for convert numbers to devanagari
+  * [instagram-backup.go](./instagram-backup) - script for backup instagram photos
+  * [golang-cross-build.sh](./golang-cross-build) - script for cross-compile Go programs 
+
+##Docker images:
+
   * [ASCII-art](./ascii-art) - Docker image for figlet and cowsay
-  * [golang tip](./golang-tip) - Docker container for latest Go compiler (tip)
+  * [golang tip](./golang-tip) - Docker image for the latest Go compiler (tip)
+  * [ruby ronn](./ronn-docker) - Docker image for convert markdown files to man-pages
+  * [ruby fpm](./fpm-docker) - Docker image for fpm, tool for create deb-package from dir
