@@ -1,8 +1,9 @@
 # docker build -t alpine-test .
 FROM alpine:latest
 
-RUN apk update && \
-    apk add bash less vim mc curl man
+RUN apk --no-cache \
+    add bash less vim mc ca-certificates wget curl man openssl && \
+    update-ca-certificates
 
 ADD .bashrc /root/.bashrc
 
