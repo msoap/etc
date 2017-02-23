@@ -46,11 +46,11 @@ build_one_arch()
                 ./$APP_NAME.1=/usr/share/man/man1/ \
                 LICENSE=/usr/share/doc/$APP_NAME/copyright \
                 README.md=/usr/share/doc/$APP_NAME/ && \
-            echo "$(ls *.deb) $(cat *.deb | shasum | awk '{print $1}')" >> $APP_NAME.shasum
+            echo "$(ls *.deb) $(cat *.deb | shasum -a 256 | awk '{print $1}')" >> $APP_NAME.shasum
         fi
     fi
 
-    echo "$zip_name/$APP_NAME_EXE $(cat $APP_NAME_EXE | shasum | awk '{print $1}')" >> $APP_NAME.shasum
+    echo "$zip_name/$APP_NAME_EXE $(cat $APP_NAME_EXE | shasum -a 256 | awk '{print $1}')" >> $APP_NAME.shasum
     rm $APP_NAME_EXE
 }
 
