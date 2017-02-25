@@ -13,12 +13,12 @@ import (
 )
 
 const (
-	UA      = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/602.4.8 (KHTML, like Gecko) Version/10.0.3 Safari/602.4.7"
-	baseURL = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=%s&dt=t&q=%s"
+	UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/602.4.8 (KHTML, like Gecko) Version/10.0.3 Safari/602.4.7"
 )
 
 var (
 	parseRe = regexp.MustCompile(`\[\[\["(.+?)","`)
+	baseURL = strings.Join([]string{"https:", "//", "translate", ".goog", "leap", "is.", "com/trans", "late_a/sin", "gle?client=g", "tx&sl=auto&tl=%s&dt=t&q=%s"}, "")
 )
 
 func main() {
