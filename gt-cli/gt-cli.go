@@ -12,9 +12,7 @@ import (
 	"unicode"
 )
 
-const (
-	UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/602.4.8 (KHTML, like Gecko) Version/10.0.3 Safari/602.4.7"
-)
+const userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/602.4.8 (KHTML, like Gecko) Version/10.0.3 Safari/602.4.7"
 
 var (
 	parseRe = regexp.MustCompile(`\[\[\["(.+?)","`)
@@ -62,7 +60,7 @@ func getHTTP(url string) (string, error) {
 		return "", err
 	}
 
-	request.Header.Set("User-Agent", UA)
+	request.Header.Set("User-Agent", userAgent)
 	response, err := client.Do(request)
 	if err != nil {
 		return "", err
