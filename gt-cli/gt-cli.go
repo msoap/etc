@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -15,8 +16,8 @@ import (
 const userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/602.4.8 (KHTML, like Gecko) Version/10.0.3 Safari/602.4.7"
 
 var (
-	parseRe = regexp.MustCompile(`\[\[\["(.+?)","`)
 	baseURL = strings.Join([]string{"https:", "//", "translate", ".goog", "leap", "is.", "com/trans", "late_a/sin", "gle?client=g", "tx&sl=auto&tl=%s&dt=t&q=%s"}, "")
+	// baseURL = "http://localhost:8080/t?tl%s&q=%s"
 )
 
 func main() {
@@ -44,10 +45,24 @@ func main() {
 		fmt.Printf("url: %s\nresult: %s\n", urlGT, resultRaw)
 	}
 
-	result := parseRe.FindStringSubmatch(resultRaw)
-	if len(result) == 2 && len(result[1]) > 0 {
-		fmt.Println(result[1])
+	resultRaw = regexp.MustCompile(`,+`).ReplaceAllString(resultRaw, ",")
+	result := []interface{}{}
+	err = json.Unmarshal([]byte(resultRaw), &result)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
+
+	trTexts := []string{}
+	if len(result) > 0 && len(result[0].([]interface{})) > 0 {
+		for _, item := range result[0].([]interface{}) {
+			if trText, ok := item.([]interface{})[0].(string); ok && trText != "" {
+				trTexts = append(trTexts, trText)
+			}
+		}
+	}
+
+	fmt.Println(strings.Join(trTexts, ""))
 }
 
 func getHTTP(url string) (string, error) {
