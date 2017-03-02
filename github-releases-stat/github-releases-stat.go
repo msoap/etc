@@ -26,12 +26,14 @@ Source:
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 	"sort"
+	"time"
 
 	"github.com/google/go-github/github"
 )
@@ -99,11 +101,13 @@ func main() {
 
 	client := github.NewClient(nil)
 	releases := []*github.RepositoryRelease{}
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
 
 	if getAll {
 		nextPage := 1
 		for nextPage != 0 {
-			releasesChunk, response, err := client.Repositories.ListReleases(flag.Args()[0], flag.Args()[1], &github.ListOptions{Page: nextPage, PerPage: ItemsPerPage})
+			releasesChunk, response, err := client.Repositories.ListReleases(ctx, flag.Args()[0], flag.Args()[1], &github.ListOptions{Page: nextPage, PerPage: ItemsPerPage})
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -113,7 +117,7 @@ func main() {
 
 	} else {
 
-		release, _, err := client.Repositories.GetLatestRelease(flag.Args()[0], flag.Args()[1])
+		release, _, err := client.Repositories.GetLatestRelease(ctx, flag.Args()[0], flag.Args()[1])
 		if err != nil {
 			log.Fatal(err)
 		}
