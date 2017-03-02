@@ -29,10 +29,7 @@ func main() {
 	var text string
 	if isPipe(os.Stdin) {
 		textBytes, err := ioutil.ReadAll(os.Stdin)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
+		errCheck(err)
 		text = string(textBytes)
 	} else {
 		text = strings.Join(os.Args[1:], " ")
@@ -48,10 +45,7 @@ func main() {
 
 	urlGT := fmt.Sprintf(baseURL, to, url.QueryEscape(text))
 	resultRaw, err := getHTTP(urlGT)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	errCheck(err)
 	if len(os.Getenv("DEBUG")) > 0 {
 		fmt.Printf("url: %s\nresult: %s\n", urlGT, resultRaw)
 	}
@@ -59,10 +53,7 @@ func main() {
 	resultRaw = regexp.MustCompile(`,+`).ReplaceAllString(resultRaw, ",")
 	result := []interface{}{}
 	err = json.Unmarshal([]byte(resultRaw), &result)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	errCheck(err)
 
 	trTexts := []string{}
 	if len(result) > 0 && len(result[0].([]interface{})) > 0 {
@@ -110,4 +101,11 @@ func isPipe(std *os.File) bool {
 	}
 
 	return false
+}
+
+func errCheck(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
