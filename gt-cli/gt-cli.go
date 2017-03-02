@@ -21,12 +21,23 @@ var (
 )
 
 func main() {
-	if len(os.Args) < 2 || os.Args[1] == "--help" {
+	if len(os.Args) >= 2 && os.Args[1] == "--help" {
 		fmt.Printf("usage: %s text\n", os.Args[0])
 		return
 	}
 
-	text := strings.Join(os.Args[1:], " ")
+	var text string
+	if isPipe(os.Stdin) {
+		textBytes, err := ioutil.ReadAll(os.Stdin)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		text = string(textBytes)
+	} else {
+		text = strings.Join(os.Args[1:], " ")
+	}
+
 	to := "ru"
 	for _, r := range text {
 		if unicode.In(r, unicode.Cyrillic) {
@@ -91,4 +102,12 @@ func getHTTP(url string) (string, error) {
 	}
 
 	return string(body), nil
+}
+
+func isPipe(std *os.File) bool {
+	if stdoutStat, err := std.Stat(); err != nil || (stdoutStat.Mode()&os.ModeCharDevice) == 0 {
+		return true
+	}
+
+	return false
 }
