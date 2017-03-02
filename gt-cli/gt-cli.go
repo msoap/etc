@@ -1,3 +1,4 @@
+// go get -u github.com/msoap/etc/gt-cli
 package main
 
 import (
