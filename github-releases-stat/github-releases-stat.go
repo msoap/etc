@@ -39,8 +39,6 @@ import (
 // ItemsPerPage - github pagination size
 const ItemsPerPage = 10
 
-type releaseAssetList []github.ReleaseAsset
-
 // AssetOut - one asset with stat
 type AssetOut struct {
 	Name          string `json:"name"`
@@ -56,27 +54,20 @@ type ReleaseOut struct {
 	Assets      []AssetOut `json:"assets"`
 }
 
-func (assets releaseAssetList) Len() int      { return len(assets) }
-func (assets releaseAssetList) Swap(i, j int) { assets[i], assets[j] = assets[j], assets[i] }
-func (assets releaseAssetList) Less(i, j int) bool {
-	return *assets[i].DownloadCount < *assets[j].DownloadCount
-}
-
-func printOneRelease(release *github.RepositoryRelease) {
-	fmt.Printf("%s (%s) - %s\n", *release.Name, *release.PublishedAt, *release.HTMLURL)
-	sort.Sort(sort.Reverse(releaseAssetList(release.Assets)))
+func printOneRelease(release ReleaseOut) {
+	fmt.Printf("%s (%s) - %s\n", release.Name, release.PublishedAt, release.HTMLURL)
 	for i, assets := range release.Assets {
-		fmt.Printf("  %d. %-35s: %d\n", i, *assets.Name, *assets.DownloadCount)
+		fmt.Printf("  %d. %-35s: %d\n", i, assets.Name, assets.DownloadCount)
 	}
 }
 
-func outOneRelease(release *github.RepositoryRelease) (result ReleaseOut) {
+func getOneRelease(release *github.RepositoryRelease) (result ReleaseOut) {
 	result.Name = *release.Name
 	result.PublishedAt = (*release.PublishedAt).String()
 	result.HTMLURL = *release.HTMLURL
 	result.TagName = *release.TagName
 	result.Assets = []AssetOut{}
-	sort.Sort(sort.Reverse(releaseAssetList(release.Assets)))
+	sort.SliceStable(release.Assets, func(a int, b int) bool { return *release.Assets[a].DownloadCount > *release.Assets[b].DownloadCount })
 	for _, assets := range release.Assets {
 		result.Assets = append(result.Assets, AssetOut{*assets.Name, *assets.DownloadCount})
 	}
@@ -137,10 +128,10 @@ func main() {
 	}{}
 	for _, release := range releases {
 		if getJSON {
-			releaseOut := outOneRelease(release)
+			releaseOut := getOneRelease(release)
 			jsonAllOut.Releases = append(jsonAllOut.Releases, releaseOut)
 		} else {
-			printOneRelease(release)
+			printOneRelease(getOneRelease(release))
 		}
 		allDownloads += getSummary(release.Assets)
 	}
