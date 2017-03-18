@@ -7,6 +7,7 @@
 ```
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/msoap/ascii-art.svg?maxAge=3600)](https://hub.docker.com/r/msoap/ascii-art/)
+[![](https://images.microbadger.com/badges/image/msoap/ascii-art.svg)](https://microbadger.com/images/msoap/ascii-art)
 
 ## Get:
 
