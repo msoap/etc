@@ -39,8 +39,10 @@ build_one_arch()
         # build deb package (need install fpm)
         if [[ $(which fpm) ]] && [[ $GOOS == linux ]] && [[ $GOARCH == amd64 ]]; then
             # or with docker: docker run -it --rm -v $PWD:/app -w /app ruby-fpm fpm ...
-            fpm -s dir -t deb --force --name $APP_NAME -v $VERSION \
-                --license=$(head -1 LICENSE) \
+            fpm -s dir -t deb --force \
+                --name "$APP_NAME" \
+                -v "$VERSION" \
+                --license="$(head -1 LICENSE)" \
                 --maintainer="$APP_MAINTAINER" \
                 ./$APP_NAME=/usr/bin/ \
                 ./$APP_NAME.1=/usr/share/man/man1/ \
