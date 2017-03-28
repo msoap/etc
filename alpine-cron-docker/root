@@ -1,0 +1,3 @@
+#!/bin/sh
+
+echo periodic by 15 minutes $(date) >> /app/CRON.txt

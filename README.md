@@ -27,3 +27,4 @@ Docker images:
   * [ruby ronn](./ronn-docker) - Docker image for convert markdown files to man-pages
   * [ruby fpm](./fpm-docker) - Docker image for fpm, tool for create deb-package from dir
   * [alpine test](./alpine-test) - Docker image with Alpine linux for test purposes
+  * [alpine cron](./alpine-cron-docker) - Docker image witn cron example
