@@ -11,7 +11,7 @@
 # get all image names
 #   gsutil ls 'gs://us.artifacts.PROJECT-ID.appspot.com/containers/repositories/library/' | awk -F/ '{print $7}'
 #
-# used commands from gcloud SDK:
+# used commands from gcloud SDK (https://cloud.google.com/sdk/gcloud/reference/beta/container/images/):
 #   gcloud beta container images list-tags us.gcr.io/PROJECT-ID/repo | awk 'NF == 2 && $2 ~ /^[0-9]/ {print $1}'
 #   gcloud beta container images delete us.gcr.io/PROJECT-ID/repo@sha256:DIGEST
 
