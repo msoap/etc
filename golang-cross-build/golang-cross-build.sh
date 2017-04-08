@@ -28,11 +28,11 @@ build_one_arch()
     if [ $GOOS == windows ]
     then
         APP_NAME_EXE=${APP_NAME}.exe
-        go build -ldflags="-w" -o $APP_NAME_EXE $SRC_PATH
+        go build -ldflags="-w -s" -o $APP_NAME_EXE $SRC_PATH
         zip_name="$APP_NAME-$VERSION.$GOOS.$GOARCH.zip"
         zip -9 $zip_name $APP_NAME_EXE README.md LICENSE
     else
-        go build -ldflags="-w" -o $APP_NAME_EXE $SRC_PATH
+        go build -ldflags="-w -s" -o $APP_NAME_EXE $SRC_PATH
         zip_name="$APP_NAME-$VERSION.$GOOS.$GOARCH.tar.gz"
         tar -czf $zip_name $APP_NAME_EXE README.md LICENSE $(ls $APP_NAME.1 2>/dev/null)
 
