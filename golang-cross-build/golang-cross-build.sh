@@ -56,7 +56,7 @@ build_one_arch()
     rm $APP_NAME_EXE
 }
 
-VERSION=$(git describe --tags)
+VERSION=$(git describe --tags --abbrev=0)
 VERSION=${VERSION:-0.1}
 
 APP_NAME=$1
