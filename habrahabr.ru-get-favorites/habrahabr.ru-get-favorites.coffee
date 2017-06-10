@@ -1,10 +1,10 @@
 #!/usr/bin/env coffee
 
-# get user favorites from habrahabr.ru, geektimes.ru and megamozg.ru
+# get user favorites from habrahabr.ru and geektimes.ru
 
 Jsdom = require "jsdom"
 
-HABRAHABR_HOSTS = ["http://habrahabr.ru", "http://geektimes.ru", "http://megamozg.ru"]
+HABRAHABR_HOSTS = ["http://habrahabr.ru", "http://geektimes.ru"]
 HABR_USER_NAME = process.argv[2] || process.env.USER
 
 # ------------------------------------------------------------------
