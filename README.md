@@ -19,6 +19,7 @@ Little things moved from [github gists](https://gist.github.com/msoap).
   * [instagram-backup.go](./instagram-backup) - script for backup instagram photos
   * [golang-cross-build.sh](./golang-cross-build) - script for cross-compile Go programs 
   * [gcloud-containers-delete-untagged.pl](./gcloud-containers-delete-untagged) - script for delete all untagged images from Google Container Registry
+  * [Yandex Translate cli](./yt-cli) - cli apllication and Telegram bot for Yandex Translate API
 
 Docker images:
 ==============
