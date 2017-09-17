@@ -24,4 +24,5 @@ Build own bot Docker image:
 Use exists image:
 
     # use current dir for save users DB (/db in container)
+    # export TB_TOKEN=*** # get it from https://core.telegram.org/bots#6-botfather
     docker run -d --rm --name yt-bot --env TB_TOKEN=$TB_TOKEN --env YT_KEY=$YT_KEY -v $PWD:/db msoap/yt-bot
