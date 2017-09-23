@@ -1,5 +1,5 @@
-#  export TB_TOKEN=***
-#  export YT_KEY=***
+# export TB_TOKEN=***
+# export YT_KEY=***
 # docker build -t yt-bot .
 # docker run -d --rm --name yt-bot --env TB_TOKEN=$TB_TOKEN --env YT_KEY=$YT_KEY -v $PWD:/db yt-bot
 
