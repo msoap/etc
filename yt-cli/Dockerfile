@@ -19,6 +19,7 @@ COPY --from=go_builder /go/bin/yt-cli /app/yt-cli
 CMD ["-description", "Yandex Translate bot", \
      "-cache", "3600", \
      "-shell", "", \
+     "-one-thread", \
      "-persistent-users", "-users-db", "/db/yt-bot.db", \
      "/:plain_text:desc=translate text", "/app/yt-cli" \
     ]
