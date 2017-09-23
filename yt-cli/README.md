@@ -1,6 +1,9 @@
 Command line client for Yandex Translate API
 --------------------------------------------
 
+[![Docker Pulls](https://img.shields.io/docker/pulls/msoap/yt-bot.svg?maxAge=3600)](https://hub.docker.com/r/msoap/yt-bot)
+[![](https://images.microbadger.com/badges/image/msoap/yt-bot.svg)](https://microbadger.com/images/msoap/yt-bot)
+
 Install
 =======
 
