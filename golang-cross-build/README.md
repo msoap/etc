@@ -1,7 +1,7 @@
 Go cross compile
 ----------------
 
-##Usage:
+## Usage:
 
       golang-cross-build.sh program_name [path]
     
@@ -14,7 +14,7 @@ Version gets from last git tag
 
 For build *.deb need install fpm: `gem install --no-ri --no-rdoc fpm`
 
-##Setup build and auto-deploy to Github releases:
+## Setup build and auto-deploy to Github releases:
 
 add to your `.travis.ci`
 

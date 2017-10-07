@@ -44,7 +44,7 @@ Run in 2 threads:
                    Perl/Dancer ( 2 thr):  31.0 ■■
               Perl/Mojolicious ( 2 thr):  28.9 ■
 
-####Create chart:
+#### Create chart:
 
 For all, 10 and 2 threads:
 
@@ -52,7 +52,7 @@ For all, 10 and 2 threads:
     cat *.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/ && $thr == 10) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 15)}}'
     cat *.md | perl -nlE 'use open ":std" => ":utf8"; BEGIN{my %stat, $lang, $thr} $lang = $1 if /^##(\w.+)$/; $thr = $1 if /^\s+(\d+)\s+threads/; if (/Requests\/sec:\s+(\d+\.\d+)/ && $thr == 2) {$stat{$lang . sprintf(" (%2d thr)", $thr)} = $1} END {for my $lang (sort {$stat{$b} <=> $stat{$a}} keys %stat) {printf "%35s: %5.1f %s\n", $lang, $stat{$lang}, chr(9632) x int($stat{$lang} / 15)}}'
 
-####wrk command line
+#### wrk command line
 
     wrk -d 60 -c 2 -t 2 http://raspberrypi.local:8080/
     wrk -d 60 -c 10 -t 10 http://raspberrypi.local:8080/
@@ -61,11 +61,11 @@ version: wrk 4.0.0
 
 HTTP response size is 228 bytes
 
-##Nginx
+## Nginx
 
 version: 1.2.1
 
-###wrk result
+### wrk result
 
     Running 1m test @ http://192.168.1.7/test
       2 threads and 2 connections
@@ -87,7 +87,7 @@ Run in 10 threads:
     Requests/sec:    826.12
     Transfer/sec:    183.90KB
 
-##Caddy
+## Caddy
 
 version: 0.8.1
 
@@ -95,7 +95,7 @@ run:
 
     caddy -port 8080 browse
 
-###wrk result
+### wrk result
 
     Running 1m test @ http://192.168.1.7:8080/test
       2 threads and 2 connections
@@ -117,16 +117,16 @@ Run in 10 threads:
     Requests/sec:    199.09
     Transfer/sec:     44.33KB
 
-##Go
+## Go
 
 version: go version go1.6 linux/arm
 
-###run
+### run
 
     go build httpd.go
     ./httpd
 
-###wrk result
+### wrk result
 
     Running 1m test @ http://192.168.1.7:8080/
       2 threads and 2 connections
@@ -148,16 +148,16 @@ Run in 10 threads:
     Requests/sec:    621.12
     Transfer/sec:    138.30KB
 
-##Go/fasthttp
+## Go/fasthttp
 
 version: go version go1.6 linux/arm
 
-###run
+### run
 
     go build httpd_fast.go
     ./httpd_fast
 
-###wrk result
+### wrk result
 
     Running 1m test @ http://192.168.1.7:8080/
       2 threads and 2 connections
@@ -179,11 +179,11 @@ Run in 10 threads:
     Requests/sec:    929.98
     Transfer/sec:    207.07KB
 
-##Node.js
+## Node.js
 
 version: 5.6.0
 
-###wrk result
+### wrk result
 
     Running 1m test @ http://192.168.1.7:8080/
       2 threads and 2 connections
@@ -205,15 +205,15 @@ Run in 10 threads:
     Requests/sec:    195.08
     Transfer/sec:     45.53KB
 
-##Python
+## Python
 
 version: 2.7.3
 
-###run
+### run
 
     ./httpd.py > /dev/null 2>&1
 
-###wrk result
+### wrk result
 
     Running 1m test @ http://192.168.1.7:8080/
       2 threads and 2 connections
@@ -236,15 +236,15 @@ Run in 10 threads:
     Requests/sec:     95.52
     Transfer/sec:     21.27KB
 
-##Perl/Mojolicious
+## Perl/Mojolicious
 
 version: 6.46
 
-###run
+### run
 
     hypnotoad --foreground ./httpd-mojo.pl
 
-###wrk result
+### wrk result
 
     Running 1m test @ http://192.168.1.7:8080/
       2 threads and 2 connections
@@ -255,13 +255,13 @@ version: 6.46
     Requests/sec:     28.85
     Transfer/sec:      6.45KB
 
-##Perl/HTTP::Daemon
+## Perl/HTTP::Daemon
 
 version: 6.01
 
     ./httpd.pl
 
-###wrk result
+### wrk result
 
 Run in 1 thread:
 
@@ -274,13 +274,13 @@ Run in 1 thread:
     Requests/sec:     90.40
     Transfer/sec:     20.13KB
 
-##Perl/Dancer
+## Perl/Dancer
 
 version: 1.3118
 
     ./httpd-dancer.pl
 
-###wrk result
+### wrk result
 
     Running 1m test @ http://192.168.1.7:3000/
       2 threads and 2 connections
@@ -291,13 +291,13 @@ version: 1.3118
     Requests/sec:     31.02
     Transfer/sec:      6.91KB
 
-##Perl/HTTP::Server::Simple
+## Perl/HTTP::Server::Simple
 
 version: 0.44
 
     ./httpd-server-simple.pl
 
-###wrk result
+### wrk result
 
     Running 1m test @ http://192.168.1.7:8080/
       2 threads and 2 connections
