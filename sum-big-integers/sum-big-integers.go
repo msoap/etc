@@ -58,7 +58,6 @@ func main() {
 	output := make(chan *big.Int)
 	re := regexp.MustCompile(`\d+`)
 
-	runtime.GOMAXPROCS(cntParallels)
 	for i := 1; i <= cntParallels; i++ {
 		go numbersSummator(input, output)
 	}
