@@ -3,12 +3,11 @@ Go cross compile
 
 ## Usage:
 
-      golang-cross-build.sh program_name [path]
+      golang-cross-build.sh [program_name [path]]
     
-      golang-cross-build.sh program_name
+      golang-cross-build.sh
       golang-cross-build.sh program_name ./
       golang-cross-build.sh program_name ./cmd/name
-    
 
 Version gets from last git tag
 
@@ -25,8 +24,8 @@ env:
     - CURRENT_GO_VERSION="1.8"
 
 go:
-  - 1.7.x
   - 1.8.x
+  - 1.9.x
   - master
 
 before_deploy:

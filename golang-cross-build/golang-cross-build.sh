@@ -3,10 +3,10 @@
 # Golang: build binaries for Linux/OS X/Windows x amd64/386/arm/arm64
 #
 # usage:
-#   golang-cross-build.sh program_name [path]
+#   golang-cross-build.sh [program_name [path]]
 #
+#   golang-cross-build.sh
 #   golang-cross-build.sh program_name
-#   golang-cross-build.sh program_name ./
 #   golang-cross-build.sh program_name ./cmd/name
 #
 # Version get from last git tag
@@ -22,6 +22,7 @@ build_one_arch()
     export GOOS=$1
     export GOARCH=$2
     APP_NAME_EXE=$APP_NAME
+    zip_name="$APP_NAME-$VERSION.$GOOS.$GOARCH"
     echo build: $GOOS/$GOARCH
     go get -d -t ./...
 
@@ -29,16 +30,16 @@ build_one_arch()
     then
         APP_NAME_EXE=${APP_NAME}.exe
         go build -ldflags="-w -s" -o $APP_NAME_EXE $SRC_PATH
-        zip_name="$APP_NAME-$VERSION.$GOOS.$GOARCH.zip"
+        zip_name="$zip_name.zip"
         zip -9 $zip_name $APP_NAME_EXE README.md LICENSE
     else
         go build -ldflags="-w -s" -o $APP_NAME_EXE $SRC_PATH
-        zip_name="$APP_NAME-$VERSION.$GOOS.$GOARCH.tar.gz"
+        zip_name="$zip_name.tar.gz"
         tar -czf $zip_name $APP_NAME_EXE README.md LICENSE $(ls $APP_NAME.1 2>/dev/null)
 
         # build deb package (need install fpm)
         if [[ $(which fpm) ]] && [[ $GOOS == linux ]] && [[ $GOARCH == amd64 ]]; then
-            # or with docker: docker run -it --rm -v $PWD:/app -w /app ruby-fpm fpm ...
+            # or with docker: docker run -it --rm -v $PWD:/app -w /app msoap/ruby-fpm fpm ...
             fpm -s dir -t deb --force \
                 --name "$APP_NAME" \
                 -v "$VERSION" \
@@ -64,8 +65,7 @@ APP_MAINTAINER=$(git show HEAD | awk '$1 == "Author:" {print $2 " " $3 " " $4}')
 
 if [ -z $APP_NAME ]
 then
-    echo "Need name: $0 name"
-    exit 1
+    APP_NAME=$(basename $(pwd))
 fi
 
 SRC_PATH=${2:-./}
