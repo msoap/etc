@@ -33,7 +33,7 @@ sub main {
 
     for my $repo (@ARGV) {
         print "Try $repo...\n";
-        my @digests = grep {length($_) > 1} map {chomp $_; $_} `gcloud beta container images list-tags $repo | awk 'NF == 2 && \$2 ~ /^[0-9]/ {print \$1}'`;
+        my @digests = grep {length($_) > 1} map {chomp $_; $_} `gcloud beta container images list-tags $repo --limit=100 | awk 'NF == 2 && \$2 ~ /^[0-9]/ {print \$1}'`;
         if (scalar(@digests) == 0) {
             print "Nothing todo\n";
             next;
