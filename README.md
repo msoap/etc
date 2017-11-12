@@ -20,6 +20,7 @@ Little things moved from [github gists](https://gist.github.com/msoap).
   * [gcloud-containers-delete-untagged.pl](./gcloud-containers-delete-untagged) - script for delete all untagged images from Google Container Registry
   * [gt-cli.go](./gt-cli) - cli apllication for Google Translate
   * [yt-cli.go](./yt-cli) - cli apllication and Telegram bot for Yandex Translate API
+  * [parse_unicode_flags_json.go](./parse_unicode_flags_json) - create Go package with unicode flags
 
 Docker images:
 ==============
