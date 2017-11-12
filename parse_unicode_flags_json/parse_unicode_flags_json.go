@@ -34,12 +34,11 @@ const outFileName = "flags.go"
 const tmpl = `package main
 
 type flagItem struct {
-	Code  string
 	Emoji string
 	Name  string
 }
 
-var flags = []flagItem{
+var flags = map[string]flagItem{
 %s
 }
 `
@@ -56,9 +55,7 @@ func main() {
 
 	items := []string{}
 	for _, item := range flags {
-		row := fmt.Sprintf("%#v", item)
-		row = strings.TrimPrefix(row, "main.flagItem")
-		items = append(items, row+",")
+		items = append(items, fmt.Sprintf("%q: {Emoji: %q, Name: %q},", item.Code, item.Emoji, item.Name))
 	}
 
 	goFile, err := os.Create(outFileName)
