@@ -40,7 +40,7 @@ sub main {
         }
 
         my $all_images = join(" ", map {"$repo\@sha256:$_"} @digests);
-        my $delete_command = "gcloud beta container images delete $all_images";
+        my $delete_command = "gcloud beta container images delete --quiet $all_images";
 
         print "$delete_command\n";
         if (! $dry_run) {
