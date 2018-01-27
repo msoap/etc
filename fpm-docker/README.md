@@ -1,13 +1,12 @@
 # Docker image for ruby fpm gem
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/msoap/ruby-fpm.svg?maxAge=3600)](https://hub.docker.com/r/msoap/ruby-fpm)
-[![](https://images.microbadger.com/badges/image/msoap/ruby-fpm.svg)](https://microbadger.com/images/msoap/ruby-fpm)
+[![Docker Pulls](https://img.shields.io/docker/pulls/msoap/ruby-fpm.svg?maxAge=3600)](https://hub.docker.com/r/msoap/ruby-fpm) [![](https://images.microbadger.com/badges/image/msoap/ruby-fpm.svg)](https://microbadger.com/images/msoap/ruby-fpm)
 
 ## Install
 
     docker pull msoap/ruby-fpm
 
-## Usage:
+## Usage
 
     # create binary:
 	GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o app_name
@@ -25,6 +24,7 @@
 			LICENSE=/usr/share/doc/app_name/copyright \
 			README.md=/usr/share/doc/app_name/
 
-## Source code
+## Links
 
-[github.com/jordansissel/fpm](https://github.com/jordansissel/fpm)
+  * [Gem source code](https://github.com/jordansissel/fpm)
+  * [Source code](https://github.com/msoap/etc/blob/master/fpm-docker)
