@@ -13,7 +13,7 @@ Usage:
 
 Install:
 
-	go get -u github.com/msoap/etc/github-releases-stat/
+	go get -u github.com/msoap/etc/github-releases-stat
 
 Example:
 
