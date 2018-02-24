@@ -14,8 +14,9 @@ import (
 )
 
 const (
-	baseURL = "https://translate.yandex.net/api/v1.5/tr.json/%s?key=%s&lang=%s&text=%s"
-	timeOut = 10
+	tokenVarName = "YT_KEY"
+	baseURL      = "https://translate.yandex.net/api/v1.5/tr.json/%s?key=%s&lang=%s&text=%s"
+	timeOut      = 10
 )
 
 type translateResult struct {
@@ -58,10 +59,10 @@ func getInputData() (ytKey string, text string, err error) {
 		os.Exit(0)
 	}
 
-	if os.Getenv("YT_KEY") == "" {
-		return "", "", fmt.Errorf("YT_KEY required")
+	if os.Getenv(tokenVarName) == "" {
+		return "", "", fmt.Errorf("%s required", tokenVarName)
 	}
-	ytKey = os.Getenv("YT_KEY")
+	ytKey = os.Getenv(tokenVarName)
 
 	if isPipe(os.Stdin) {
 		textBytes, err := ioutil.ReadAll(os.Stdin)
