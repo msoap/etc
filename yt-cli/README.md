@@ -37,3 +37,5 @@ Links
 =====
 
   * [Source code](https://github.com/msoap/etc/tree/master/yt-cli)
+  * [API](https://tech.yandex.ru/translate/)
+  * [API statistic](https://translate.yandex.ru/developers/stat)
