@@ -6,9 +6,9 @@ Utility for show docker logs from multiple containers in "follow" mode (like `do
 Install
 =======
 
-    `go get -u github.com/msoap/etc/docker-logs`
+    go get -u github.com/msoap/etc/docker-logs
 
 Usage
 =====
 
-    `docker-logs`
+    docker-logs
