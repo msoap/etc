@@ -11,6 +11,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"hash/fnv"
 	"io"
 	"log"
 	"os"
@@ -20,6 +21,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
+	"github.com/mgutz/ansi"
 )
 
 const (
@@ -60,7 +62,30 @@ type logLine struct {
 }
 
 func (ll logLine) String() string {
-	return fmt.Sprintf("%s (%s): %s", ll.containerName, ll.outType, ll.log)
+	return fmt.Sprintf("%s %s", ansi.Color(ll.containerName, getColorByHash(ll.containerName)), ll.log)
+}
+
+var colors = [...]string{
+	"red",
+	"green",
+	"yellow",
+	"blue",
+	"magenta",
+	"cyan",
+	"red+h",
+	"green+h",
+	"yellow+h",
+	"blue+h",
+	"magenta+h",
+	"cyan+h",
+	"white+h",
+}
+
+func getColorByHash(in string) string {
+	h := fnv.New64()
+	io.WriteString(h, in)
+	i := int(h.Sum(nil)[0]) % len(colors)
+	return colors[i]
 }
 
 func (a *application) initDockerClient() error {

@@ -16,7 +16,7 @@ Usage
 ### Features
 
   * [x] Show logs from all containers
-  * [ ] Color output
+  * [x] Color output
   * [ ] Auto attach to new containers
   * [ ] Option for exclude some containers
   * [ ] Option for highlight STDERR logs
