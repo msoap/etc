@@ -22,6 +22,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/mgutz/ansi"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -35,18 +36,20 @@ const (
 )
 
 type application struct {
-	docker    *client.Client
-	viewState viewState
+	ctx        context.Context
+	docker     *client.Client
+	containers map[string]container
+	viewState  viewState
+}
+
+type container struct {
+	id    string
+	color string
 }
 
 type viewState struct {
 	colorsTable   []string
 	maxNameLength int
-	containers    map[string]container
-}
-
-type container struct {
-	color string
 }
 
 type outType int
@@ -74,7 +77,11 @@ type logLine struct {
 }
 
 func newApplication() (*application, error) {
+	ctx := context.Background()
+
 	app := application{
+		ctx:        ctx,
+		containers: map[string]container{},
 		viewState: viewState{
 			colorsTable: []string{
 				"red",
@@ -91,12 +98,31 @@ func newApplication() (*application, error) {
 				"cyan+h",
 				"white+h",
 			},
-			containers: map[string]container{},
 		},
 	}
 
 	if err := app.initDockerClient(); err != nil {
 		return nil, err
+	}
+
+	containers, err := app.docker.ContainerList(ctx, types.ContainerListOptions{})
+	if err != nil {
+		return nil, errors.Wrap(err, "init docker client failed")
+	}
+
+	for _, item := range containers {
+		containerName := getContainerName(item)
+
+		log.Printf("found container: %s (%s) %s", containerName, item.ID[:shortIDLength], item.Image)
+
+		app.containers[containerName] = container{
+			color: "0",
+			id:    item.ID,
+		}
+
+		if len(containerName) > app.viewState.maxNameLength && len(containerName) <= maxContainerNameLen {
+			app.viewState.maxNameLength = len(containerName)
+		}
 	}
 
 	return &app, nil
@@ -105,13 +131,13 @@ func newApplication() (*application, error) {
 func (a *application) initDockerClient() error {
 	if os.Getenv(dockerVersionVarName) == "" {
 		if err := os.Setenv(dockerVersionVarName, minimumDockerAPIVersion); err != nil {
-			return err
+			return errors.Wrap(err, "set env failed")
 		}
 	}
 
 	cli, err := client.NewEnvClient()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "new docker client failed")
 	}
 
 	a.docker = cli
@@ -155,24 +181,14 @@ func (a *application) getColorByHash(in string) string {
 }
 
 func (a *application) printLogLine(line logLine) {
-	fmt.Printf("%s %s\n", ansi.Color(line.containerName, a.getColorByHash(line.containerName)), line.log)
+	fmt.Printf("%s%*s%s %s\n", ansi.ColorCode(a.getColorByHash(line.containerName)), -a.viewState.maxNameLength, line.containerName, ansi.Reset, line.log)
 }
 
 func (a *application) showDockerLogs() error {
-	ctx := context.Background()
-
-	containers, err := a.docker.ContainerList(ctx, types.ContainerListOptions{})
-	if err != nil {
-		return fmt.Errorf("init docker client failed: %s", err)
-	}
-
 	logsCh := make(chan logLine, 10)
 
-	for _, container := range containers {
-		containerName := getContainerName(container)
-		log.Printf("found container: %s (%s) %s", containerName, container.ID[:shortIDLength], container.Image)
-
-		multiplexedLogReader, err := a.docker.ContainerLogs(ctx, container.ID, types.ContainerLogsOptions{
+	for containerName, container := range a.containers {
+		multiplexedLogReader, err := a.docker.ContainerLogs(a.ctx, container.id, types.ContainerLogsOptions{
 			ShowStdout: true,
 			ShowStderr: true,
 			Follow:     true,
