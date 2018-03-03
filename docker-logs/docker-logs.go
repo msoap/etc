@@ -134,10 +134,6 @@ func newApplication() (*application, error) {
 			color: app.viewState.getNextColor(),
 			id:    item.ID,
 		}
-
-		if len(containerName) > app.viewState.maxNameLength && len(containerName) <= maxContainerNameLen {
-			app.viewState.maxNameLength = len(containerName)
-		}
 	}
 
 	return &app, nil
@@ -206,6 +202,11 @@ func (a *application) getContainerColor(name string) string {
 }
 
 func (a *application) printLogLine(line logLine) {
+	length := len(line.containerName)
+	if length > a.viewState.maxNameLength && length <= maxContainerNameLen {
+		a.viewState.maxNameLength = length
+	}
+
 	fmt.Printf("%s%*s%s %s\n", ansi.ColorCode(a.getContainerColor(line.containerName)), -a.viewState.maxNameLength, line.containerName, ansi.Reset, line.log)
 }
 
