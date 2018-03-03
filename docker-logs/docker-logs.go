@@ -16,6 +16,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"sort"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -144,10 +145,14 @@ func newApplication() (*application, error) {
 }
 
 func randomSetSeed(list []types.Container) {
-	h := fnv.New64()
+	ids := []string{}
 	for _, item := range list {
-		_, _ = io.WriteString(h, item.ID)
+		ids = append(ids, item.ID)
 	}
+	sort.Strings(ids)
+
+	h := fnv.New64()
+	_, _ = io.WriteString(h, strings.Join(ids, ""))
 
 	rand.Seed(int64(h.Sum64()))
 }
