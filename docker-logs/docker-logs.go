@@ -145,14 +145,14 @@ func newApplication() (*application, error) {
 }
 
 func randomSetSeed(list []types.Container) {
-	ids := []string{}
+	names := []string{}
 	for _, item := range list {
-		ids = append(ids, item.ID)
+		names = append(names, getContainerName(item))
 	}
-	sort.Strings(ids)
+	sort.Strings(names)
 
 	h := fnv.New64()
-	_, _ = io.WriteString(h, strings.Join(ids, ""))
+	_, _ = io.WriteString(h, strings.Join(names, ""))
 
 	rand.Seed(int64(h.Sum64()))
 }
