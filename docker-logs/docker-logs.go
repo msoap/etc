@@ -17,6 +17,7 @@ import (
 	"math/rand"
 	"os"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -43,8 +44,9 @@ type application struct {
 }
 
 type container struct {
-	id    string
-	color string
+	id     string
+	color  string
+	outNum *int32
 }
 
 type viewState struct {
@@ -130,9 +132,11 @@ func newApplication() (*application, error) {
 
 		log.Printf("found container: %s (%s) %s", containerName, item.ID[:shortIDLength], item.Image)
 
+		var zero int32
 		app.containers[containerName] = container{
-			color: app.viewState.getNextColor(),
-			id:    item.ID,
+			color:  app.viewState.getNextColor(),
+			id:     item.ID,
+			outNum: &zero,
 		}
 	}
 
@@ -165,7 +169,7 @@ func (a *application) initDockerClient() error {
 	return nil
 }
 
-func processLogLines(logsCh chan logLine, reader io.Reader, containerName string, outType outType) {
+func (a *application) processLogLines(logsCh chan logLine, reader io.Reader, containerName string, outType outType) {
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		nextLine := scanner.Text()
@@ -181,6 +185,11 @@ func processLogLines(logsCh chan logLine, reader io.Reader, containerName string
 	}
 
 	log.Printf("closed %s log for container %s", outType, containerName)
+
+	if atomic.AddInt32(a.containers[containerName].outNum, -1) == 0 {
+		delete(a.containers, containerName)
+		log.Printf("container %q was removed", containerName)
+	}
 }
 
 func getContainerName(container types.Container) string {
@@ -223,6 +232,7 @@ func (a *application) showDockerLogs() error {
 		if err != nil {
 			return err
 		}
+		atomic.StoreInt32(container.outNum, 2)
 
 		dstOutReader, dstOutWriter := io.Pipe()
 		dstErrReader, dstErrWriter := io.Pipe()
@@ -258,8 +268,8 @@ func (a *application) showDockerLogs() error {
 			closeStdErrFn()
 		}()
 
-		go processLogLines(logsCh, dstOutReader, containerName, outTypeStdOut)
-		go processLogLines(logsCh, dstErrReader, containerName, outTypeStdErr)
+		go a.processLogLines(logsCh, dstOutReader, containerName, outTypeStdOut)
+		go a.processLogLines(logsCh, dstErrReader, containerName, outTypeStdErr)
 	}
 
 	for nextLine := range logsCh {
