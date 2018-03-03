@@ -14,6 +14,7 @@ import (
 	"hash/fnv"
 	"io"
 	"log"
+	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -49,7 +50,18 @@ type container struct {
 
 type viewState struct {
 	colorsTable   []string
+	currColorNum  int
 	maxNameLength int
+}
+
+func (vs *viewState) getNextColor() string {
+	color := vs.colorsTable[vs.currColorNum]
+	vs.currColorNum++
+	if vs.currColorNum > len(vs.colorsTable)-1 {
+		vs.currColorNum = 0
+	}
+
+	return color
 }
 
 type outType int
@@ -96,7 +108,6 @@ func newApplication() (*application, error) {
 				"blue+h",
 				"magenta+h",
 				"cyan+h",
-				"white+h",
 			},
 		},
 	}
@@ -110,13 +121,18 @@ func newApplication() (*application, error) {
 		return nil, errors.Wrap(err, "init docker client failed")
 	}
 
+	randomSetSeed(containers)
+	rand.Shuffle(len(app.viewState.colorsTable), func(i int, j int) {
+		app.viewState.colorsTable[i], app.viewState.colorsTable[j] = app.viewState.colorsTable[j], app.viewState.colorsTable[i]
+	})
+
 	for _, item := range containers {
 		containerName := getContainerName(item)
 
 		log.Printf("found container: %s (%s) %s", containerName, item.ID[:shortIDLength], item.Image)
 
 		app.containers[containerName] = container{
-			color: "0",
+			color: app.viewState.getNextColor(),
 			id:    item.ID,
 		}
 
@@ -126,6 +142,15 @@ func newApplication() (*application, error) {
 	}
 
 	return &app, nil
+}
+
+func randomSetSeed(list []types.Container) {
+	h := fnv.New64()
+	for _, item := range list {
+		io.WriteString(h, item.ID)
+	}
+
+	rand.Seed(int64(h.Sum64()))
 }
 
 func (a *application) initDockerClient() error {
@@ -173,15 +198,16 @@ func getContainerName(container types.Container) string {
 	return container.ID
 }
 
-func (a *application) getColorByHash(in string) string {
-	h := fnv.New64()
-	io.WriteString(h, in)
-	i := int(h.Sum(nil)[0]) % len(a.viewState.colorsTable)
-	return a.viewState.colorsTable[i]
+func (a *application) getContainerColor(name string) string {
+	if container, ok := a.containers[name]; ok {
+		return container.color
+	}
+
+	return a.viewState.colorsTable[0]
 }
 
 func (a *application) printLogLine(line logLine) {
-	fmt.Printf("%s%*s%s %s\n", ansi.ColorCode(a.getColorByHash(line.containerName)), -a.viewState.maxNameLength, line.containerName, ansi.Reset, line.log)
+	fmt.Printf("%s%*s%s %s\n", ansi.ColorCode(a.getContainerColor(line.containerName)), -a.viewState.maxNameLength, line.containerName, ansi.Reset, line.log)
 }
 
 func (a *application) showDockerLogs() error {
