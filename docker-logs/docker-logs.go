@@ -31,10 +31,22 @@ const (
 	sinceTimeSeconds        = 600
 	rfc3339LocalFormat      = "2006-01-02T15:04:05"
 	shortIDLength           = 12
+	maxContainerNameLen     = 25
 )
 
 type application struct {
-	docker *client.Client
+	docker    *client.Client
+	viewState viewState
+}
+
+type viewState struct {
+	colorsTable   []string
+	maxNameLength int
+	containers    map[string]container
+}
+
+type container struct {
+	color string
 }
 
 type outType int
@@ -61,31 +73,33 @@ type logLine struct {
 	outType       outType
 }
 
-func (ll logLine) String() string {
-	return fmt.Sprintf("%s %s", ansi.Color(ll.containerName, getColorByHash(ll.containerName)), ll.log)
-}
+func newApplication() (*application, error) {
+	app := application{
+		viewState: viewState{
+			colorsTable: []string{
+				"red",
+				"green",
+				"yellow",
+				"blue",
+				"magenta",
+				"cyan",
+				"red+h",
+				"green+h",
+				"yellow+h",
+				"blue+h",
+				"magenta+h",
+				"cyan+h",
+				"white+h",
+			},
+			containers: map[string]container{},
+		},
+	}
 
-var colors = [...]string{
-	"red",
-	"green",
-	"yellow",
-	"blue",
-	"magenta",
-	"cyan",
-	"red+h",
-	"green+h",
-	"yellow+h",
-	"blue+h",
-	"magenta+h",
-	"cyan+h",
-	"white+h",
-}
+	if err := app.initDockerClient(); err != nil {
+		return nil, err
+	}
 
-func getColorByHash(in string) string {
-	h := fnv.New64()
-	io.WriteString(h, in)
-	i := int(h.Sum(nil)[0]) % len(colors)
-	return colors[i]
+	return &app, nil
 }
 
 func (a *application) initDockerClient() error {
@@ -133,6 +147,17 @@ func getContainerName(container types.Container) string {
 	return container.ID
 }
 
+func (a *application) getColorByHash(in string) string {
+	h := fnv.New64()
+	io.WriteString(h, in)
+	i := int(h.Sum(nil)[0]) % len(a.viewState.colorsTable)
+	return a.viewState.colorsTable[i]
+}
+
+func (a *application) printLogLine(line logLine) {
+	fmt.Printf("%s %s\n", ansi.Color(line.containerName, a.getColorByHash(line.containerName)), line.log)
+}
+
 func (a *application) showDockerLogs() error {
 	ctx := context.Background()
 
@@ -162,7 +187,7 @@ func (a *application) showDockerLogs() error {
 
 		go func() {
 			closeStdErrFn := func() {
-				log.Printf("do close %q stderr logs", containerName)
+				log.Printf("do close %q %s logs", containerName, outType(outTypeStdErr))
 				if err := dstErrWriter.Close(); err != nil {
 					log.Printf("close stderr for %q failed: %s", containerName, err)
 				}
@@ -184,7 +209,7 @@ func (a *application) showDockerLogs() error {
 				}
 			}
 
-			log.Printf("do close %q stdout logs", containerName)
+			log.Printf("do close %q %s logs", containerName, outType(outTypeStdOut))
 			if err := dstOutWriter.Close(); err != nil {
 				log.Printf("close stdout for %q failed: %s", containerName, err)
 			}
@@ -196,17 +221,16 @@ func (a *application) showDockerLogs() error {
 	}
 
 	for nextLine := range logsCh {
-		fmt.Println(nextLine)
+		a.printLogLine(nextLine)
 	}
 
 	return nil
 }
 
 func main() {
-	app := application{}
-
-	if err := app.initDockerClient(); err != nil {
-		log.Printf("init docker client failed: %s", err)
+	app, err := newApplication()
+	if err != nil {
+		log.Printf("init application failed: %s", err)
 		return
 	}
 
