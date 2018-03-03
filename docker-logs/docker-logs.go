@@ -29,7 +29,6 @@ import (
 const (
 	minimumDockerAPIVersion = "1.12"
 	dockerVersionVarName    = "DOCKER_API_VERSION"
-	timeout                 = 60
 	sinceTimeSeconds        = 600
 	rfc3339LocalFormat      = "2006-01-02T15:04:05"
 	shortIDLength           = 12
@@ -147,7 +146,7 @@ func newApplication() (*application, error) {
 func randomSetSeed(list []types.Container) {
 	h := fnv.New64()
 	for _, item := range list {
-		io.WriteString(h, item.ID)
+		_, _ = io.WriteString(h, item.ID)
 	}
 
 	rand.Seed(int64(h.Sum64()))
@@ -160,7 +159,7 @@ func (a *application) initDockerClient() error {
 		}
 	}
 
-	cli, err := client.NewEnvClient()
+	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		return errors.Wrap(err, "new docker client failed")
 	}
