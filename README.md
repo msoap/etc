@@ -22,6 +22,7 @@ Little things moved from [github gists](https://gist.github.com/msoap).
   * [yt-cli.go](./yt-cli) - cli apllication and Telegram bot for Yandex Translate API
   * [parse_unicode_flags_json.go](./parse_unicode_flags_json) - create Go package with unicode flags
   * [docker-logs](./docker-logs) - utility for show docker logs from multiple containers in "follow" mode
+  * [is-password-pwned](./is-password-pwned) - utility for check password in Cloudflare database
 
 Docker images:
 ==============
