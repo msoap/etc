@@ -50,7 +50,7 @@ func getFromURL(host, habrUrl string) ([]item, error) {
 	doc := html2data.FromURL(habrUrl)
 
 	// parse links
-	links, err := doc.GetDataNested("h2.post__title", map[string]string{
+	links, err := doc.GetDataNestedFirst("h2.post__title", map[string]string{
 		"title": "a.post__title_link",
 		"url":   "a.post__title_link:attr(href)",
 	})
@@ -59,12 +59,9 @@ func getFromURL(host, habrUrl string) ([]item, error) {
 	}
 
 	for _, row := range links {
-		if len(row["title"]) == 0 || len(row["url"]) == 0 {
-			return nil, fmt.Errorf("failed to parse link: %+v", row)
-		}
 		result = append(result, item{
-			title: row["title"][0],
-			url:   row["url"][0],
+			title: row["title"],
+			url:   row["url"],
 		})
 	}
 
