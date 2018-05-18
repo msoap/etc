@@ -35,6 +35,7 @@ func main() {
 		result, err := getFromURL(host, url)
 		if err != nil {
 			log.Printf("failed to parse %s: %s", url, err)
+			continue
 		}
 
 		fmt.Printf("%s favorites for %s\n-----------------------------------\n", host, userName)
