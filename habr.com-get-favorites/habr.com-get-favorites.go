@@ -17,7 +17,7 @@ import (
 	"github.com/msoap/html2data"
 )
 
-var hosts = []string{"https://habr.com", "https://geektimes.com"}
+var hosts = []string{"https://habr.com"}
 
 type item struct {
 	url   string
@@ -30,6 +30,7 @@ func main() {
 		userName = os.Args[1]
 	}
 
+	count := 0
 	for _, host := range hosts {
 		url := fmt.Sprintf("%s/users/%s/favorites/", host, userName)
 		result, err := getFromURL(host, url)
@@ -43,7 +44,10 @@ func main() {
 			fmt.Printf("%s %s\n", result[i].url, result[i].title)
 		}
 		fmt.Println()
+		count += len(result)
 	}
+
+	fmt.Fprintf(os.Stderr, "---\n    found %d items at all\n", count)
 }
 
 func getFromURL(host, habrUrl string) ([]item, error) {
@@ -65,6 +69,8 @@ func getFromURL(host, habrUrl string) ([]item, error) {
 			url:   row["url"],
 		})
 	}
+
+	fmt.Fprintf(os.Stderr, "parsed %s, found %d items\n", habrUrl, len(links))
 
 	// parse next page
 	nextPage, err := doc.GetDataSingle("div.page__footer > ul > li a[id=next_page]:attr(href)")

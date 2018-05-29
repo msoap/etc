@@ -7,7 +7,7 @@
 
 Jsdom = require "jsdom"
 
-HABRAHABR_HOSTS = ["https://habr.com", "https://geektimes.com"]
+HABRAHABR_HOSTS = ["https://habr.com"]
 HABR_USER_NAME = process.argv[2] || process.env.USER
 
 # ------------------------------------------------------------------
