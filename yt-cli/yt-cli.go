@@ -2,8 +2,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -20,9 +22,10 @@ const (
 )
 
 type translateResult struct {
-	Code int      `json:"code"`
-	Lang string   `json:"lang"`
-	Text []string `json:"text"`
+	Code    int      `json:"code"`
+	Lang    string   `json:"lang"`
+	Text    []string `json:"text"`
+	Message string   `json:"message"`
 }
 
 func main() {
@@ -39,18 +42,19 @@ func main() {
 		}
 	}
 
-	urlYT := fmt.Sprintf(baseURL, "translate", ytKey, lang, url.QueryEscape(text))
-	resultRaw, err := getHTTP(urlYT)
-	errCheck(err)
-	if len(os.Getenv("DEBUG")) > 0 {
-		fmt.Printf("url: %s\nresult: %s\n", urlYT, string(resultRaw))
-	}
-
+	urlYT := fmt.Sprintf(baseURL, "translate", url.QueryEscape(ytKey), url.QueryEscape(lang), url.QueryEscape(text))
 	result := translateResult{}
-	err = json.Unmarshal(resultRaw, &result)
+	err = callAPI(urlYT, &result)
 	errCheck(err)
 
-	fmt.Println(strings.Join(result.Text, ""))
+	switch result.Code {
+	case 200:
+		fmt.Println(strings.Join(result.Text, ""))
+	case 401:
+		fmt.Printf("Error: %s\n", result.Message)
+	default:
+		fmt.Printf("Unknown result code: %d, message: %s\n", result.Code, result.Message)
+	}
 }
 
 func getInputData() (ytKey string, text string, err error) {
@@ -75,26 +79,34 @@ func getInputData() (ytKey string, text string, err error) {
 	return ytKey, text, nil
 }
 
-func getHTTP(url string) ([]byte, error) {
+func callAPI(url string, result interface{}) error {
 	client := &http.Client{
 		Timeout: timeOut * time.Second,
 	}
 
 	response, err := client.Get(url)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
+	defer response.Body.Close()
+
+	var apiJSON io.Reader = response.Body
+
+	if os.Getenv("DEBUG") != "" {
+		body, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("url: %s\nresult: %s\n", url, string(body))
+		apiJSON = bytes.NewReader(body)
 	}
 
-	if err := response.Body.Close(); err != nil {
-		return nil, err
+	if err := json.NewDecoder(apiJSON).Decode(result); err != nil {
+		return err
 	}
 
-	return body, nil
+	return nil
 }
 
 func isPipe(std *os.File) bool {

@@ -16,17 +16,18 @@ Usage
 
     export YT_KEY=***     # get it from https://translate.yandex.ru/developers/keys
     yt-cli "english text" # translate to russian
-    yt-cli "russian text" # translate to english
+    yt-cli "привет"       # translate to english
+    echo some text for translate | yt-cli # translate STDIN
 
 Telegram bot
 ============
 
-Build own bot Docker image:
+Build and run own bot Docker image:
 
     docker build -t yt-bot .
     docker run -d --rm --name yt-bot --env TB_TOKEN=$TB_TOKEN --env YT_KEY=$YT_KEY -v $PWD:/db yt-bot
 
-Use exists Docker image:
+Or use exists Docker image:
 
     # use current dir for save users DB (/db in container)
     export TB_TOKEN=*** # get it from https://core.telegram.org/bots#6-botfather
