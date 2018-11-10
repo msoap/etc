@@ -20,6 +20,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/mgutz/ansi"
 	"github.com/msoap/byline"
 )
 
@@ -68,10 +69,10 @@ func checkPass() (string, error) {
 	}
 
 	if count != "" {
-		return fmt.Sprintf("Password is PWNED %s times", count), nil
+		return fmt.Sprintf("Password is %s %s times", ansi.ColorFunc("red")("PWNED"), count), nil
 	}
 
-	return "Password is NOT pwned", nil
+	return fmt.Sprintf("Password is %s pwned", ansi.ColorFunc("green")("NOT")), nil
 }
 
 func sha1Hex(in string) string {
