@@ -15,7 +15,7 @@
 
 ## Build image:
 
-    rocker build
+    docker build -t ascii-art .
 
 ## cowsay:
 
