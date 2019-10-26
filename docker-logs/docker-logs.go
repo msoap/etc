@@ -35,13 +35,15 @@ const (
 	rfc3339LocalFormat      = "2006-01-02T15:04:05"
 	shortIDLength           = 12
 	maxContainerNameLen     = 25
+	autoAttachTTL           = 10 // in seconds
 )
 
 type application struct {
-	ctx        context.Context
-	docker     *client.Client
-	containers map[string]container
-	viewState  viewState
+	ctx            context.Context
+	docker         *client.Client
+	containers     map[string]container
+	viewState      viewState
+	shuffledColors bool
 }
 
 type container struct {
@@ -118,18 +120,34 @@ func newApplication() (*application, error) {
 		return nil, err
 	}
 
-	containers, err := app.docker.ContainerList(ctx, types.ContainerListOptions{})
-	if err != nil {
-		return nil, errors.Wrap(err, "init docker client failed")
+	if err := app.searchNewContainers(); err != nil {
+		return nil, err
 	}
 
-	randomSetSeed(containers)
-	rand.Shuffle(len(app.viewState.colorsTable), func(i int, j int) {
-		app.viewState.colorsTable[i], app.viewState.colorsTable[j] = app.viewState.colorsTable[j], app.viewState.colorsTable[i]
-	})
+	return &app, nil
+}
+
+func (app *application) searchNewContainers() error {
+	containers, err := app.docker.ContainerList(app.ctx, types.ContainerListOptions{})
+	if err != nil {
+		return errors.Wrap(err, "init docker client failed")
+	}
+
+	if !app.shuffledColors {
+		randomSetSeed(containers)
+		rand.Shuffle(len(app.viewState.colorsTable), func(i int, j int) {
+			app.viewState.colorsTable[i], app.viewState.colorsTable[j] = app.viewState.colorsTable[j], app.viewState.colorsTable[i]
+		})
+
+		app.shuffledColors = true
+	}
 
 	for _, item := range containers {
 		containerName := getContainerName(item)
+
+		if _, ok := app.containers[containerName]; ok {
+			continue
+		}
 
 		log.Printf("found container: %s (%s) %s", containerName, item.ID[:shortIDLength], item.Image)
 
@@ -141,7 +159,7 @@ func newApplication() (*application, error) {
 		}
 	}
 
-	return &app, nil
+	return nil
 }
 
 func randomSetSeed(list []types.Container) {
@@ -157,7 +175,7 @@ func randomSetSeed(list []types.Container) {
 	rand.Seed(int64(h.Sum64()))
 }
 
-func (a *application) initDockerClient() error {
+func (app *application) initDockerClient() error {
 	if os.Getenv(dockerVersionVarName) == "" {
 		if err := os.Setenv(dockerVersionVarName, minimumDockerAPIVersion); err != nil {
 			return errors.Wrap(err, "set env failed")
@@ -169,12 +187,12 @@ func (a *application) initDockerClient() error {
 		return errors.Wrap(err, "new docker client failed")
 	}
 
-	a.docker = cli
+	app.docker = cli
 
 	return nil
 }
 
-func (a *application) processLogLines(logsCh chan logLine, reader io.Reader, containerName string, outType outType) {
+func (app *application) processLogLines(logsCh chan logLine, reader io.Reader, containerName string, outType outType) {
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		nextLine := scanner.Text()
@@ -191,8 +209,8 @@ func (a *application) processLogLines(logsCh chan logLine, reader io.Reader, con
 
 	log.Printf("closed %s log for container %s", outType, containerName)
 
-	if atomic.AddInt32(a.containers[containerName].outNum, -1) == 0 {
-		delete(a.containers, containerName)
+	if atomic.AddInt32(app.containers[containerName].outNum, -1) == 0 {
+		delete(app.containers, containerName)
 		log.Printf("container %q was removed", containerName)
 	}
 }
@@ -207,78 +225,97 @@ func getContainerName(container types.Container) string {
 	return container.ID
 }
 
-func (a *application) getContainerColor(name string) string {
-	if container, ok := a.containers[name]; ok {
+func (app *application) getContainerColor(name string) string {
+	if container, ok := app.containers[name]; ok {
 		return container.color
 	}
 
-	return a.viewState.colorsTable[0]
+	return app.viewState.colorsTable[0]
 }
 
-func (a *application) printLogLine(line logLine) {
+func (app *application) printLogLine(line logLine) {
 	length := len(line.containerName)
-	if length > a.viewState.maxNameLength && length <= maxContainerNameLen {
-		a.viewState.maxNameLength = length
+	if length > app.viewState.maxNameLength && length <= maxContainerNameLen {
+		app.viewState.maxNameLength = length
 	}
 
-	fmt.Printf("%s%*s%s %s\n", ansi.ColorCode(a.getContainerColor(line.containerName)), -a.viewState.maxNameLength, line.containerName, ansi.Reset, line.log)
+	fmt.Printf("%s%*s%s %s\n", ansi.ColorCode(app.getContainerColor(line.containerName)), -app.viewState.maxNameLength, line.containerName, ansi.Reset, line.log)
 }
 
-func (a *application) showDockerLogs() error {
+func (app *application) showDockerLogs() error {
 	logsCh := make(chan logLine, 10)
+	hasNewContainers := true
 
-	for containerName, container := range a.containers {
-		multiplexedLogReader, err := a.docker.ContainerLogs(a.ctx, container.id, types.ContainerLogsOptions{
-			ShowStdout: true,
-			ShowStderr: true,
-			Follow:     true,
-			Since:      time.Now().Add(-sinceTimeSeconds * time.Second).Format(rfc3339LocalFormat),
-		})
-		if err != nil {
-			return err
-		}
-		atomic.StoreInt32(container.outNum, 2)
-
-		dstOutReader, dstOutWriter := io.Pipe()
-		dstErrReader, dstErrWriter := io.Pipe()
-
-		go func() {
-			closeStdErrFn := func() {
-				log.Printf("do close %q %s logs", containerName, outType(outTypeStdErr))
-				if err := dstErrWriter.Close(); err != nil {
-					log.Printf("close stderr for %q failed: %s", containerName, err)
+	for {
+		if hasNewContainers {
+			for containerName, container := range app.containers {
+				if atomic.LoadInt32(container.outNum) > 0 {
+					continue
 				}
-			}
 
-			if _, err := stdcopy.StdCopy(dstOutWriter, dstErrWriter, multiplexedLogReader); err != nil {
-				if err != io.EOF {
-					log.Printf("demultiplex %q via StdCopy failed: %q, try parse simple stdout", containerName, err)
-					closeStdErrFn()
+				multiplexedLogReader, err := app.docker.ContainerLogs(app.ctx, container.id, types.ContainerLogsOptions{
+					ShowStdout: true,
+					ShowStderr: true,
+					Follow:     true,
+					Since:      time.Now().Add(-sinceTimeSeconds * time.Second).Format(rfc3339LocalFormat),
+				})
+				if err != nil {
+					return err
+				}
+				atomic.StoreInt32(container.outNum, 2)
 
-					// try parse out without headers
-					if _, err := io.Copy(dstOutWriter, multiplexedLogReader); err != nil {
-						if err == io.EOF {
-							log.Printf("%q logs closed", containerName)
-						} else {
-							log.Printf("copy %q logs failed: %s", containerName, err)
+				dstOutReader, dstOutWriter := io.Pipe()
+				dstErrReader, dstErrWriter := io.Pipe()
+
+				go func() {
+					closeStdErrFn := func() {
+						log.Printf("do close %q %s logs", containerName, outType(outTypeStdErr))
+						if err := dstErrWriter.Close(); err != nil {
+							log.Printf("close stderr for %q failed: %s", containerName, err)
 						}
 					}
-				}
+
+					if _, err := stdcopy.StdCopy(dstOutWriter, dstErrWriter, multiplexedLogReader); err != nil {
+						if err != io.EOF {
+							log.Printf("demultiplex %q via StdCopy failed: %q, try parse simple stdout", containerName, err)
+							closeStdErrFn()
+
+							// try parse out without headers
+							if _, err := io.Copy(dstOutWriter, multiplexedLogReader); err != nil {
+								if err == io.EOF {
+									log.Printf("%q logs closed", containerName)
+								} else {
+									log.Printf("copy %q logs failed: %s", containerName, err)
+								}
+							}
+						}
+					}
+
+					log.Printf("do close %q %s logs", containerName, outType(outTypeStdOut))
+					if err := dstOutWriter.Close(); err != nil {
+						log.Printf("close stdout for %q failed: %s", containerName, err)
+					}
+					closeStdErrFn()
+				}()
+
+				go app.processLogLines(logsCh, dstOutReader, containerName, outTypeStdOut)
+				go app.processLogLines(logsCh, dstErrReader, containerName, outTypeStdErr)
 			}
 
-			log.Printf("do close %q %s logs", containerName, outType(outTypeStdOut))
-			if err := dstOutWriter.Close(); err != nil {
-				log.Printf("close stdout for %q failed: %s", containerName, err)
+			hasNewContainers = false
+		}
+
+		select {
+		case nextLine := <-logsCh:
+			app.printLogLine(nextLine)
+		case <-time.After(autoAttachTTL * time.Second):
+			log.Print("try search new containers...")
+
+			if err := app.searchNewContainers(); err != nil {
+				return errors.Wrap(err, "failed to search new containers")
 			}
-			closeStdErrFn()
-		}()
-
-		go a.processLogLines(logsCh, dstOutReader, containerName, outTypeStdOut)
-		go a.processLogLines(logsCh, dstErrReader, containerName, outTypeStdErr)
-	}
-
-	for nextLine := range logsCh {
-		a.printLogLine(nextLine)
+			hasNewContainers = true
+		}
 	}
 
 	return nil
