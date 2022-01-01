@@ -2,7 +2,7 @@
 	habr.com-get-favorites - get favorites from habrahabr sites
 
 	Install:
-		go get -u github.com/msoap/etc/habr.com-get-favorites
+		GO111MODULE=off go get -u github.com/msoap/etc/habr.com-get-favorites
 
 	Usage:
 		habr.com-get-favorites [user_name] > habr-favorites.txt

@@ -1,4 +1,4 @@
-// go get -u github.com/msoap/etc/yt-cli
+// GO111MODULE=off go get -u github.com/msoap/etc/yt-cli
 package main
 
 import (

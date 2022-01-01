@@ -6,7 +6,7 @@ Command line client for Yandex Translate API
 Install
 =======
 
-    go get -u github.com/msoap/etc/yt-cli
+    GO111MODULE=off go get -u github.com/msoap/etc/yt-cli
     
     # or from docker
     docker pull msoap/yt-bot

@@ -2,7 +2,7 @@
 Utility for show docker logs from multiple containers in "follow" mode (like "docker-compose logs -f").
 
 Install:
-	go get -u github.com/msoap/etc/docker-logs
+	GO111MODULE=off go get -u github.com/msoap/etc/docker-logs
 
 */
 package main

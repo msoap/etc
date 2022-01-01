@@ -4,7 +4,7 @@ See: https://blog.cloudflare.com/using-cloudflare-workers-to-identify-pwned-pass
 
 ## Install
 
-    go get -u github.com/msoap/etc/is-password-pwned
+    GO111MODULE=off go get -u github.com/msoap/etc/is-password-pwned
 
 ## Usage
 

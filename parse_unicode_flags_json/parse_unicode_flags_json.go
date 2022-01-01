@@ -2,7 +2,7 @@
 // Usage:
 //  go run parse_unicode_flags_json.go
 //  # or
-//  go get -u github.com/msoap/etc/parse_unicode_flags_json
+//  GO111MODULE=off go get -u github.com/msoap/etc/parse_unicode_flags_json
 //  parse_unicode_flags_json
 package main
 
