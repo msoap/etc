@@ -13,7 +13,7 @@ Usage:
 
 Install:
 
-	go get -u github.com/msoap/etc/github-releases-stat
+	GO111MODULE=off go get -u github.com/msoap/etc/github-releases-stat
 
 Example:
 
@@ -76,7 +76,7 @@ func getOneRelease(release *github.RepositoryRelease) (result ReleaseOut) {
 	return result
 }
 
-func getSummary(assets []github.ReleaseAsset) (result int) {
+func getSummary(assets []*github.ReleaseAsset) (result int) {
 	for _, asset := range assets {
 		result += *asset.DownloadCount
 	}
