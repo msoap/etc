@@ -17,7 +17,6 @@ Little things moved from [github gists](https://gist.github.com/msoap).
   * [golang-cross-build.sh](./golang-cross-build) - script for cross-compile Go programs 
   * [gcloud-containers-delete-untagged.pl](./gcloud-containers-delete-untagged) - script for delete all untagged images from Google Container Registry
   * [gt-cli.go](./gt-cli) - cli apllication for Google Translate
-  * [yt-cli.go](./yt-cli) - cli apllication and Telegram bot for Yandex Translate API
   * [parse_unicode_flags_json.go](./parse_unicode_flags_json) - create Go package with unicode flags
   * [docker-logs](./docker-logs) - utility for show docker logs from multiple containers in "follow" mode
   * [is-password-pwned](./is-password-pwned) - utility for check password in Cloudflare database
