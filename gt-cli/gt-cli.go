@@ -1,4 +1,5 @@
 // GO111MODULE=off go get -u github.com/msoap/etc/gt-cli
+// ln -s $GOPATH/bin/gt-cli $GOPATH/bin/gt-cli-en # for English as destination
 package main
 
 import (
@@ -19,6 +20,8 @@ const (
 	baseURL   = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=%s&dt=t&q=%s"
 )
 
+var reBin = regexp.MustCompile(`gt-cli-([a-z]{2})$`)
+
 func main() {
 	if len(os.Args) >= 2 && os.Args[1] == "--help" {
 		fmt.Printf("usage: %s text\n", os.Args[0])
@@ -34,11 +37,17 @@ func main() {
 		text = strings.Join(os.Args[1:], " ")
 	}
 
-	to := "ru"
-	for _, r := range text {
-		if unicode.In(r, unicode.Cyrillic) {
-			to = "en"
-			break
+	var to string
+	if len(os.Args) > 0 {
+		to = getLang(os.Args[0])
+	}
+	if to == "" {
+		to = "ru"
+		for _, r := range text {
+			if unicode.In(r, unicode.Cyrillic) {
+				to = "en"
+				break
+			}
 		}
 	}
 
@@ -64,6 +73,14 @@ func main() {
 	}
 
 	fmt.Println(strings.Join(trTexts, ""))
+}
+
+func getLang(bin string) string {
+	if m := reBin.FindStringSubmatch(bin); len(m) == 2 {
+		return m[1]
+	}
+
+	return ""
 }
 
 func getHTTP(url string) (string, error) {
