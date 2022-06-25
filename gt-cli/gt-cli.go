@@ -40,6 +40,10 @@ func main() {
 		text = strings.Join(os.Args[1:], " ")
 	}
 
+	if text == "" {
+		return
+	}
+
 	var to string
 	if len(os.Args) > 0 {
 		to = getLang(os.Args[0])
