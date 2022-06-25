@@ -1,0 +1,15 @@
+# docker compose build
+# docker compose up -d
+# docker compose logs -f
+# docker compose down
+
+services:
+    latin-bot:
+        build: .
+        image: latin-bot:latest
+        container_name: latin-bot
+        restart: always
+        environment:
+            - TB_TOKEN=$LATIN_BOT_TB_TOKEN
+        volumes:
+            - $LATIN_BOT_HOST_DB_DIR:/db
