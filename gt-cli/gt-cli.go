@@ -20,7 +20,10 @@ const (
 	baseURL   = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=%s&dt=t&q=%s"
 )
 
-var reBin = regexp.MustCompile(`gt-cli-([a-z]{2})$`)
+var (
+	reBin    = regexp.MustCompile(`gt-cli-([a-z]{2})$`)
+	reCommas = regexp.MustCompile(`,+`)
+)
 
 func main() {
 	if len(os.Args) >= 2 && os.Args[1] == "--help" {
@@ -58,7 +61,7 @@ func main() {
 		fmt.Printf("url: %s\nresult: %s\n", urlGT, resultRaw)
 	}
 
-	resultRaw = regexp.MustCompile(`,+`).ReplaceAllString(resultRaw, ",")
+	resultRaw = reCommas.ReplaceAllString(resultRaw, ",")
 	result := []interface{}{}
 	err = json.Unmarshal([]byte(resultRaw), &result)
 	errCheck(err)
