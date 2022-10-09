@@ -4,7 +4,6 @@ Honeypot for http tracking.
 
 	sudo sh -c 'echo "127.0.0.1 google-analytics.com" >> /etc/hosts'
 	sudo sh -c 'echo "127.0.0.1 googleads.g.doubleclick.net" >> /etc/hosts'
-	sudo sh -c 'echo "127.0.0.1 mc.yandex.ru" >> /etc/hosts'
 
 	go build http-honeypot.go
 	sudo ./http-honeypot
