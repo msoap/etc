@@ -16,11 +16,14 @@ import (
 )
 
 const (
-	userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15"
+	userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:70.0) Gecko/20100101 Firefox/70.0"
 	baseURL   = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=%s&dt=t&q=%s"
 )
 
-var reBin = regexp.MustCompile(`gt-cli-([a-z]{2})$`)
+var (
+	reBin    = regexp.MustCompile(`gt-cli-([a-z]{2})$`)
+	reCommas = regexp.MustCompile(`,+`)
+)
 
 func main() {
 	if len(os.Args) >= 2 && os.Args[1] == "--help" {
@@ -35,6 +38,10 @@ func main() {
 		text = string(textBytes)
 	} else {
 		text = strings.Join(os.Args[1:], " ")
+	}
+
+	if text == "" {
+		return
 	}
 
 	var to string
@@ -58,7 +65,7 @@ func main() {
 		fmt.Printf("url: %s\nresult: %s\n", urlGT, resultRaw)
 	}
 
-	resultRaw = regexp.MustCompile(`,+`).ReplaceAllString(resultRaw, ",")
+	resultRaw = reCommas.ReplaceAllString(resultRaw, ",")
 	result := []interface{}{}
 	err = json.Unmarshal([]byte(resultRaw), &result)
 	errCheck(err)
