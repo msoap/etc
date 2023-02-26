@@ -3,7 +3,9 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -16,18 +18,28 @@ import (
 )
 
 const (
-	userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:70.0) Gecko/20100101 Firefox/70.0"
+	userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:101.0) Gecko/20100101 Firefox/101.0"
 	baseURL   = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=%s&dt=t&q=%s"
 )
 
 var (
-	reBin    = regexp.MustCompile(`gt-cli-([a-z]{2})$`)
-	reCommas = regexp.MustCompile(`,+`)
+	reBin     = regexp.MustCompile(`gt-cli-([a-z]{2})$`)
+	reCommas  = regexp.MustCompile(`,+`)
+	reLangCmd = regexp.MustCompile(`^/([a-z]{2})`)
 )
 
 func main() {
-	if len(os.Args) >= 2 && os.Args[1] == "--help" {
-		fmt.Printf("usage: %s text\n", os.Args[0])
+	help := flag.Bool("help", false, "show help")
+	chat := flag.Bool("chat", false, "chat mode")
+	flag.Parse()
+
+	if *help {
+		fmt.Printf("usage: %s text | -chat\n", os.Args[0])
+		return
+	}
+
+	if *chat {
+		chatMode()
 		return
 	}
 
@@ -49,15 +61,50 @@ func main() {
 		to = getLang(os.Args[0])
 	}
 	if to == "" {
-		to = "ru"
-		for _, r := range text {
-			if unicode.In(r, unicode.Cyrillic) {
-				to = "en"
-				break
-			}
+		to = detectLang(text)
+	}
+
+	fmt.Println(translate(to, text))
+}
+
+func detectLang(text string) string {
+	if lang := reLangCmd.FindStringSubmatch(text); len(lang) == 2 {
+		return lang[1]
+	}
+
+	to := "ru"
+	for _, r := range text {
+		if unicode.In(r, unicode.Cyrillic) {
+			to = "en"
+			break
 		}
 	}
 
+	return to
+}
+
+func chatMode() {
+	for {
+		fmt.Print("> ")
+		text, err := bufio.NewReader(os.Stdin).ReadString('\n')
+		errCheck(err)
+
+		text = strings.TrimSpace(text)
+		if text == "" {
+			continue
+		}
+
+		if text == "/exit" {
+			break
+		}
+		to := detectLang(text)
+		text = strings.TrimSpace(reLangCmd.ReplaceAllString(text, ""))
+
+		fmt.Println(translate(to, text))
+	}
+}
+
+func translate(to string, text string) string {
 	urlGT := fmt.Sprintf(baseURL, to, url.QueryEscape(text))
 	resultRaw, err := getHTTP(urlGT)
 	errCheck(err)
@@ -79,7 +126,7 @@ func main() {
 		}
 	}
 
-	fmt.Println(strings.Join(trTexts, ""))
+	return strings.Join(trTexts, "")
 }
 
 func getLang(bin string) string {
