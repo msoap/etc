@@ -27,7 +27,7 @@ const (
 var (
 	reBin     = regexp.MustCompile(`gt-cli-([a-z]{2})$`)
 	reCommas  = regexp.MustCompile(`,+`)
-	reLangCmd = regexp.MustCompile(`^/([a-z]{2})`)
+	reLangCmd = regexp.MustCompile(`^/([a-z]{2}) `)
 )
 
 func main() {
