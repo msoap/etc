@@ -7,7 +7,9 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -46,7 +48,9 @@ func main() {
 	var text string
 	if isPipe(os.Stdin) {
 		textBytes, err := ioutil.ReadAll(os.Stdin)
-		errCheck(err)
+		if err != nil {
+			log.Fatalf("read error: %s", err)
+		}
 		text = string(textBytes)
 	} else {
 		text = strings.Join(os.Args[1:], " ")
@@ -64,7 +68,11 @@ func main() {
 		to = detectLang(text)
 	}
 
-	fmt.Println(translate(to, text))
+	tr, err := translate(to, text)
+	if err != nil {
+		log.Fatalf("translate error: %s", err)
+	}
+	fmt.Println(tr)
 }
 
 func detectLang(text string) string {
@@ -87,7 +95,13 @@ func chatMode() {
 	for {
 		fmt.Print("> ")
 		text, err := bufio.NewReader(os.Stdin).ReadString('\n')
-		errCheck(err)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Printf("read error: %s", err)
+			continue
+		}
 
 		text = strings.TrimSpace(text)
 		if text == "" {
@@ -100,14 +114,23 @@ func chatMode() {
 		to := detectLang(text)
 		text = strings.TrimSpace(reLangCmd.ReplaceAllString(text, ""))
 
-		fmt.Println(translate(to, text))
+		tr, err := translate(to, text)
+		if err != nil {
+			log.Printf("translate error: %s", err)
+			continue
+		}
+
+		fmt.Println(tr)
 	}
 }
 
-func translate(to string, text string) string {
+func translate(to string, text string) (string, error) {
 	urlGT := fmt.Sprintf(baseURL, to, url.QueryEscape(text))
 	resultRaw, err := getHTTP(urlGT)
-	errCheck(err)
+	if err != nil {
+		return "", err
+	}
+
 	if len(os.Getenv("DEBUG")) > 0 {
 		fmt.Printf("url: %s\nresult: %s\n", urlGT, resultRaw)
 	}
@@ -115,7 +138,9 @@ func translate(to string, text string) string {
 	resultRaw = reCommas.ReplaceAllString(resultRaw, ",")
 	result := []interface{}{}
 	err = json.Unmarshal([]byte(resultRaw), &result)
-	errCheck(err)
+	if err != nil {
+		return "", err
+	}
 
 	trTexts := []string{}
 	if len(result) > 0 && len(result[0].([]interface{})) > 0 {
@@ -126,7 +151,7 @@ func translate(to string, text string) string {
 		}
 	}
 
-	return strings.Join(trTexts, "")
+	return strings.Join(trTexts, ""), nil
 }
 
 func getLang(bin string) string {
@@ -171,11 +196,4 @@ func isPipe(std *os.File) bool {
 	}
 
 	return false
-}
-
-func errCheck(err error) {
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
 }
