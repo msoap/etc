@@ -8,7 +8,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -20,8 +19,9 @@ import (
 )
 
 const (
-	userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:101.0) Gecko/20100101 Firefox/101.0"
-	baseURL   = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=%s&dt=t&q=%s"
+	userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2.0 Safari/605.1.15"
+	baseURL   = "https://translate.googleapis.com/translate_a/single"
+	timeOut   = 10 * time.Second
 )
 
 var (
@@ -47,7 +47,7 @@ func main() {
 
 	var text string
 	if isPipe(os.Stdin) {
-		textBytes, err := ioutil.ReadAll(os.Stdin)
+		textBytes, err := io.ReadAll(os.Stdin)
 		if err != nil {
 			log.Fatalf("read error: %s", err)
 		}
@@ -60,10 +60,7 @@ func main() {
 		return
 	}
 
-	var to string
-	if len(os.Args) > 0 {
-		to = getLang(os.Args[0])
-	}
+	to := getLangByBin()
 	if to == "" {
 		to = detectLang(text)
 	}
@@ -92,8 +89,9 @@ func detectLang(text string) string {
 }
 
 func chatMode() {
+	defaultTo := getLangByBin()
 	for {
-		fmt.Print("> ")
+		fmt.Print("❱❱ ")
 		text, err := bufio.NewReader(os.Stdin).ReadString('\n')
 		if err == io.EOF {
 			break
@@ -111,7 +109,12 @@ func chatMode() {
 		if text == "/exit" {
 			break
 		}
-		to := detectLang(text)
+
+		to := defaultTo
+		if to == "" {
+			to = detectLang(text)
+		}
+
 		text = strings.TrimSpace(reLangCmd.ReplaceAllString(text, ""))
 
 		tr, err := translate(to, text)
@@ -125,7 +128,14 @@ func chatMode() {
 }
 
 func translate(to string, text string) (string, error) {
-	urlGT := fmt.Sprintf(baseURL, to, url.QueryEscape(text))
+	params := url.Values{}
+	params.Set("client", "gtx")
+	params.Set("sl", "auto")
+	params.Set("tl", to)
+	params.Set("dt", "t")
+	params.Set("q", text)
+	urlGT := baseURL + "?" + params.Encode()
+
 	resultRaw, err := getHTTP(urlGT)
 	if err != nil {
 		return "", err
@@ -154,8 +164,11 @@ func translate(to string, text string) (string, error) {
 	return strings.Join(trTexts, ""), nil
 }
 
-func getLang(bin string) string {
-	if m := reBin.FindStringSubmatch(bin); len(m) == 2 {
+func getLangByBin() string {
+	if len(os.Args) == 0 {
+		return ""
+	}
+	if m := reBin.FindStringSubmatch(os.Args[0]); len(m) == 2 {
 		return m[1]
 	}
 
@@ -164,26 +177,29 @@ func getLang(bin string) string {
 
 func getHTTP(url string) (string, error) {
 	client := &http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: timeOut,
 	}
 
-	request, err := http.NewRequest("GET", url, nil)
+	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return "", err
 	}
 
 	request.Header.Set("User-Agent", userAgent)
+
 	response, err := client.Do(request)
 	if err != nil {
 		return "", err
 	}
 
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return "", err
-	}
+	defer func() {
+		if err := response.Body.Close(); err != nil {
+			log.Printf("response.Body.Close error: %s", err)
+		}
+	}()
 
-	if err := response.Body.Close(); err != nil {
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
 		return "", err
 	}
 
