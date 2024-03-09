@@ -15,6 +15,7 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"log"
 	"os"
 )
@@ -40,26 +41,35 @@ func main() {
 		log.Fatal("need zip file as first argument")
 	}
 
-	zp, err := zip.OpenReader(os.Args[1])
+	data, err := loadXMLFile(os.Args[1])
 	if err != nil {
-		log.Fatalf("Open zip file error: %s", err)
-	}
-	defer zp.Close()
-
-	fl, err := zp.Open("apple_health_export/export.xml")
-	if err != nil {
-		log.Fatalf("Open file from zip error: %s", err)
-	}
-	defer fl.Close()
-
-	var data healthData
-	if err := xml.NewDecoder(fl).Decode(&data); err != nil {
-		log.Fatalf("XML decode error: %s", err)
+		log.Fatalf("Load XML file: %s", err)
 	}
 
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", " ")
 	if err := encoder.Encode(data.HealthData); err != nil {
-		log.Fatalf("JSON marshal error: %s", err)
+		log.Fatalf("JSON marshal: %s", err)
 	}
+}
+
+func loadXMLFile(zipFile string) (*healthData, error) {
+	zp, err := zip.OpenReader(zipFile)
+	if err != nil {
+		return nil, fmt.Errorf("Open zip file: %s", err)
+	}
+	defer zp.Close()
+
+	fl, err := zp.Open("apple_health_export/export.xml")
+	if err != nil {
+		return nil, fmt.Errorf("Open file from zip: %s", err)
+	}
+	defer fl.Close()
+
+	var data healthData
+	if err := xml.NewDecoder(fl).Decode(&data); err != nil {
+		return nil, fmt.Errorf("XML decode error: %s", err)
+	}
+
+	return &data, nil
 }
