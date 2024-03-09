@@ -2,10 +2,12 @@
 Apple Health export data converter from XML to JSON
 
 Usage:
-  go run apple-health-xml2json.go export.zip > export.json
+
+	go run apple-health-xml2json.go export.zip > export.json
 
 Install:
-  GO111MODULE=off go get -u github.com/msoap/etc/apple-health-xml2json
+
+	GO111MODULE=off go get -u github.com/msoap/etc/apple-health-xml2json
 */
 package main
 
@@ -22,15 +24,15 @@ type healthData struct {
 }
 
 type record struct {
-	Type          string `xml:"type,attr" json:"type"`
-	SourceName    string `xml:"sourceName,attr" json:"source_name"`
+	Type          string `xml:"type,attr"          json:"type"`
+	SourceName    string `xml:"sourceName,attr"    json:"source_name"`
 	SourceVersion string `xml:"sourceVersion,attr" json:"source_version"`
-	Unit          string `xml:"unit,attr" json:"unit"`
-	CreationDate  string `xml:"creationDate,attr" json:"creation_date"`
-	StartDate     string `xml:"startDate,attr" json:"start_date"`
-	EndDate       string `xml:"endDate,attr" json:"end_date"`
-	Value         string `xml:"value,attr" json:"value"`
-	Device        string `xml:"device,attr" json:"device"`
+	Unit          string `xml:"unit,attr"          json:"unit"`
+	CreationDate  string `xml:"creationDate,attr"  json:"creation_date"`
+	StartDate     string `xml:"startDate,attr"     json:"start_date"`
+	EndDate       string `xml:"endDate,attr"       json:"end_date"`
+	Value         string `xml:"value,attr"         json:"value"`
+	Device        string `xml:"device,attr"        json:"device"`
 }
 
 func main() {
