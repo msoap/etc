@@ -7,7 +7,7 @@ Usage:
 
 Install:
 
-	go get github.com/msoap/etc/apple-health-import@latest
+	go install github.com/msoap/etc/apple-health-import@latest
 */
 package main
 
