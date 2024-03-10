@@ -1,4 +1,4 @@
-module github.com/msoap/etc/apple-health-xml2json
+module github.com/msoap/etc/apple-health-import
 
 go 1.22
 
