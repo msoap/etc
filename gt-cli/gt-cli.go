@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2.0 Safari/605.1.15"
+	userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15"
 	baseURL   = "https://translate.googleapis.com/translate_a/single"
 	timeOut   = 10 * time.Second
 )
@@ -123,7 +123,7 @@ func chatMode() {
 			continue
 		}
 
-		fmt.Println(tr)
+		fmt.Println("\033[33m" + tr + "\033[0m")
 	}
 }
 
