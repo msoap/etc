@@ -1,4 +1,5 @@
 // go build -ldflags '-s -w' -trimpath -o "$(go env GOPATH)/bin/gt-cli" gt-cli/gt-cli.go
+// rlwrap gt-cli -chat # for history and input editing
 // ln -s $GOPATH/bin/gt-cli $GOPATH/bin/gt-cli-en # for English as destination
 package main
 
