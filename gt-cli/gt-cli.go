@@ -91,6 +91,7 @@ func detectLang(text string) string {
 
 func chatMode() {
 	defaultTo := getLangByBin()
+	prevTr := ""
 	for {
 		fmt.Print("❱❱ ")
 		text, err := bufio.NewReader(os.Stdin).ReadString('\n')
@@ -111,6 +112,10 @@ func chatMode() {
 			break
 		}
 
+		if (text == "/prev" || text == "^") && prevTr != "" {
+			text = prevTr
+		}
+
 		to := defaultTo
 		if to == "" {
 			to = detectLang(text)
@@ -123,6 +128,7 @@ func chatMode() {
 			log.Printf("translate error: %s", err)
 			continue
 		}
+		prevTr = tr
 
 		fmt.Println("\033[33m" + tr + "\033[0m")
 	}
