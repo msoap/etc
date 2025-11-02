@@ -38,6 +38,7 @@ func handleError(err error, msg string) {
 func main() {
 	days := flag.Int("days", 7, "Number of days to retrieve")
 	apiKey := flag.String("key", "", "OpenAI API key (or set OPENAI_ADMIN_KEY env var)")
+	total := flag.Bool("total", false, "Show total cost")
 	flag.Parse()
 
 	key := *apiKey
@@ -75,12 +76,17 @@ func main() {
 	err = json.Unmarshal(body, &costsResp)
 	handleError(err, "Error parsing response: "+string(body))
 
+	totalCost := 0.0
 	for _, bucket := range costsResp.Data {
 		date := time.Unix(bucket.StartTime, 0).UTC().Format(time.DateOnly)
-		totalCost := 0.0
+		cost := 0.0
 		for _, result := range bucket.Results {
-			totalCost += result.Amount.Value
+			cost += result.Amount.Value
 		}
-		fmt.Printf("%s %.3f\n", date, totalCost)
+		totalCost += cost
+		fmt.Printf("%s %.3f\n", date, cost)
+	}
+	if *total {
+		fmt.Printf("Total: %.3f\n", totalCost)
 	}
 }
