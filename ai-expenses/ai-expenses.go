@@ -8,12 +8,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
 type CostAmount struct {
-	Value    float64 `json:"value"`
-	Currency string  `json:"currency"`
+	Value    probablyFloat `json:"value"`
+	Currency string        `json:"currency"`
 }
 
 type CostResult struct {
@@ -27,6 +28,26 @@ type Bucket struct {
 
 type CostsResponse struct {
 	Data []Bucket `json:"data"`
+}
+
+type probablyFloat float64 // can be float or float inside string
+
+func (p *probablyFloat) UnmarshalJSON(data []byte) error {
+	var floatValue float64
+	if err := json.Unmarshal(data, &floatValue); err == nil {
+		*p = probablyFloat(floatValue)
+		return nil
+	}
+
+	var stringValue string
+	if err := json.Unmarshal(data, &stringValue); err == nil {
+		if floatValue, err := strconv.ParseFloat(stringValue, 64); err == nil {
+			*p = probablyFloat(floatValue)
+			return nil
+		}
+	}
+
+	return fmt.Errorf("invalid value for probablyFloat: %s", data)
 }
 
 func handleError(err error, msg string) {
@@ -81,7 +102,7 @@ func main() {
 		date := time.Unix(bucket.StartTime, 0).UTC().Format(time.DateOnly)
 		cost := 0.0
 		for _, result := range bucket.Results {
-			cost += result.Amount.Value
+			cost += float64(result.Amount.Value)
 		}
 		totalCost += cost
 		fmt.Printf("%s %.3f\n", date, cost)
