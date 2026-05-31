@@ -22,6 +22,13 @@ usage:
 
 	go run http-trace.go <url>
 
+	# or after installing binary:
+	http-trace <url>
+
+install:
+
+	go install github.com/msoap/etc/http-trace@latest
+
 example:
 
   $ go run http-trace.go 'https://pkg.go.dev/'
