@@ -22,6 +22,7 @@ Little things moved from [github gists](https://gist.github.com/msoap).
   * [apple-health-import.go](./apple-health-import) - Apple Health export data converter from XML to JSON/SQLite
   * [ai-expenses](./ai-expenses) - utility for show expenses with OpenAI API
   * [http-trace](./http-trace) - utility for show http request trace in terminal
+  * [webarchive-extract](./webarchive-extract) - utility for extract from webarchive files
 
 Docker images:
 ==============
