@@ -252,8 +252,9 @@ type resource struct {
 }
 
 type archive struct {
-	main resource
-	subs []resource
+	main  resource
+	subs  []resource
+	byURL map[string][]int // URL -> indices into subs, for duplicate detection
 }
 
 // collect walks the plist, flattening subframe archives into the subresource
@@ -270,13 +271,13 @@ func (a *archive) collect(v any, depth int) error {
 		if depth == 0 {
 			a.main = r
 		} else {
-			a.subs = append(a.subs, r)
+			a.addSub(r)
 		}
 	}
 	if arr, ok := m[keySubs].([]any); ok {
 		for _, item := range arr {
 			if r, ok := toResource(item); ok && !a.duplicate(r) {
-				a.subs = append(a.subs, r)
+				a.addSub(r)
 			}
 		}
 	}
@@ -290,14 +291,27 @@ func (a *archive) collect(v any, depth int) error {
 	return nil
 }
 
+// addSub appends a subresource, indexing it by URL for duplicate detection.
+func (a *archive) addSub(r resource) {
+	if r.URL != "" {
+		if a.byURL == nil {
+			a.byURL = map[string][]int{}
+		}
+		a.byURL[r.URL] = append(a.byURL[r.URL], len(a.subs))
+	}
+	a.subs = append(a.subs, r)
+}
+
 // duplicate reports whether an identical resource was already collected.
-// Subframe archives routinely repeat the assets of their parent page.
+// Subframe archives routinely repeat the assets of their parent page. Only
+// same-URL resources are compared, so a big archive does not turn this into a
+// quadratic sweep over every payload.
 func (a *archive) duplicate(r resource) bool {
 	if r.URL == "" {
 		return false
 	}
-	for _, have := range a.subs {
-		if have.URL == r.URL && bytes.Equal(have.Data, r.Data) {
+	for _, i := range a.byURL[r.URL] {
+		if bytes.Equal(a.subs[i].Data, r.Data) {
 			return true
 		}
 	}
@@ -386,6 +400,7 @@ type asset struct {
 	name   string // filename it would take in the embed directory
 	inline bool   // travels inside the HTML as a data: URI
 	body   []byte // final content, after its own references are rewritten
+	uri    string // body as a data: URI, encoded on first use
 	state  resolveState
 }
 
@@ -435,7 +450,11 @@ func (e *extractor) ref(i int, prefix string) string {
 	e.resolve(i)
 	a := e.assets[i]
 	if a.inline {
-		return dataURI(a.res.MIME, a.name, a.body)
+		if a.uri == "" {
+			// Encoded once: a page routinely names the same asset many times.
+			a.uri = dataURI(a.res.MIME, a.name, a.body)
+		}
+		return a.uri
 	}
 	if prefix != "" {
 		return prefix + "/" + a.name

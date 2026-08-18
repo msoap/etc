@@ -11,7 +11,6 @@ import (
 	"net/url"
 	"path"
 	"regexp"
-	"sort"
 	"strings"
 	"unicode/utf16"
 	"unicode/utf8"
@@ -213,14 +212,13 @@ func isTextual(mimeType, name string) bool {
 // URL yields several textual forms, because a page may reference the same asset
 // absolutely, protocol-relatively, by root path or relatively.
 type rewriter struct {
-	forms   []string       // every spelling to look for
-	asset   map[string]int // spelling -> index into extractor.assets
+	trie    *urlTrie
+	claimed map[string]bool // every spelling to look for; the first claim wins
 	baseURL *url.URL
-	re      *regexp.Regexp
 }
 
 func newRewriter(mainURL string) *rewriter {
-	r := &rewriter{asset: map[string]int{}}
+	r := &rewriter{trie: newURLTrie(), claimed: map[string]bool{}}
 	if u, err := url.Parse(mainURL); err == nil && u.Host != "" {
 		r.baseURL = u
 	}
@@ -232,13 +230,12 @@ func (r *rewriter) add(rawURL string, idx int) {
 		return
 	}
 	for _, form := range r.spellings(rawURL) {
-		if _, dup := r.asset[form]; dup {
+		if form == "" || r.claimed[form] {
 			continue // first resource to claim a spelling keeps it
 		}
-		r.asset[form] = idx
-		r.forms = append(r.forms, form)
+		r.claimed[form] = true
+		r.trie.insert(form, idx)
 	}
-	r.re = nil
 }
 
 // spellings lists the textual forms of rawURL that may appear in markup.
@@ -272,35 +269,25 @@ func (r *rewriter) spellings(rawURL string) []string {
 	return forms
 }
 
-func (r *rewriter) compile() {
-	if r.re != nil || len(r.forms) == 0 {
+// scan visits every reference in text, longest spelling first at any given
+// position, so the ranges it reports never overlap.
+func (r *rewriter) scan(text string, fn func(start, end, idx int)) {
+	if len(r.claimed) == 0 {
 		return
 	}
-	// Longest first, because alternation in Go's regexp is leftmost-first: at a
-	// given position the most specific spelling must win.
-	forms := append([]string(nil), r.forms...)
-	sort.SliceStable(forms, func(i, j int) bool { return len(forms[i]) > len(forms[j]) })
-	quoted := make([]string, len(forms))
-	for i, f := range forms {
-		quoted[i] = regexp.QuoteMeta(f)
-	}
-	r.re = regexp.MustCompile(strings.Join(quoted, "|"))
+	r.trie.scan(text, fn)
 }
 
 // matches reports which assets text refers to, without rewriting anything.
 func (r *rewriter) matches(text string) []int {
-	r.compile()
-	if r.re == nil {
-		return nil
-	}
 	seen := map[int]bool{}
 	var out []int
-	for _, m := range r.re.FindAllString(text, -1) {
-		if i, ok := r.asset[m]; ok && !seen[i] {
-			seen[i] = true
-			out = append(out, i)
+	r.scan(text, func(_, _ int, idx int) {
+		if !seen[idx] {
+			seen[idx] = true
+			out = append(out, idx)
 		}
-	}
+	})
 	return out
 }
 
@@ -312,17 +299,97 @@ func (r *rewriter) matches(text string) []int {
 // would let a short root-relative form ("/frame.html") match inside output that
 // an earlier, longer form had already produced ("embed/frame.html").
 func (r *rewriter) apply(text, prefix string, ref func(idx int, prefix string) string) string {
-	r.compile()
-	if r.re == nil {
+	var b strings.Builder
+	last, hit := 0, false
+	r.scan(text, func(start, end, idx int) {
+		if !hit {
+			hit = true
+			b.Grow(len(text) + len(text)/4)
+		}
+		b.WriteString(text[last:start])
+		b.WriteString(ref(idx, prefix))
+		last = end
+	})
+	if !hit {
 		return text
 	}
-	return r.re.ReplaceAllStringFunc(text, func(match string) string {
-		i, ok := r.asset[match]
-		if !ok {
-			return match
+	b.WriteString(text[last:])
+	return b.String()
+}
+
+// ------------------------------------------------------------------ url trie
+
+// urlTrie stores the asset spellings and finds the longest one starting at a
+// given byte. Looking them all up used to be a single regexp alternation, but
+// Go's regexp follows every branch of a large alternation at every input
+// position, so a page with a few hundred assets and tens of megabytes of
+// scripts never finished. The trie costs one array lookup per byte that starts
+// no spelling at all, which is very nearly every byte.
+type urlTrie struct {
+	root  [256]int32       // first byte -> node, 0 meaning "nothing starts here"
+	edges map[uint64]int32 // node<<8 | byte -> node, from the second byte on
+	asset []int32          // per node: the asset it completes, or -1
+}
+
+func newURLTrie() *urlTrie {
+	// Node 0 is the root. It is never anyone's child, so 0 doubles as "no edge".
+	return &urlTrie{edges: map[uint64]int32{}, asset: []int32{-1}}
+}
+
+func (t *urlTrie) insert(s string, idx int) {
+	node := int32(0)
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		child := t.root[c]
+		if node != 0 {
+			child = t.edges[uint64(node)<<8|uint64(c)]
 		}
-		return ref(i, prefix)
-	})
+		if child == 0 {
+			child = int32(len(t.asset))
+			t.asset = append(t.asset, -1)
+			if node == 0 {
+				t.root[c] = child
+			} else {
+				t.edges[uint64(node)<<8|uint64(c)] = child
+			}
+		}
+		node = child
+	}
+	if node != 0 && t.asset[node] < 0 {
+		t.asset[node] = int32(idx) // first spelling to reach this node keeps it
+	}
+}
+
+// scan calls fn for the longest spelling found at each position, then resumes
+// after it, so reported ranges are non-overlapping and leftmost-longest - the
+// same order the sorted regexp alternation produced.
+func (t *urlTrie) scan(text string, fn func(start, end, idx int)) {
+	for i := 0; i < len(text); {
+		node := t.root[text[i]]
+		if node == 0 {
+			i++
+			continue
+		}
+		end, idx := 0, -1
+		if a := t.asset[node]; a >= 0 {
+			end, idx = i+1, int(a)
+		}
+		for j := i + 1; j < len(text); j++ {
+			node = t.edges[uint64(node)<<8|uint64(text[j])]
+			if node == 0 {
+				break
+			}
+			if a := t.asset[node]; a >= 0 {
+				end, idx = j+1, int(a)
+			}
+		}
+		if idx < 0 {
+			i++
+			continue
+		}
+		fn(i, end, idx)
+		i = end
+	}
 }
 
 // dataURI encodes an asset for embedding directly in the document. Text types
