@@ -20,7 +20,7 @@ Little things moved from [github gists](https://gist.github.com/msoap).
   * [docker-logs](./docker-logs) - utility for show docker logs from multiple containers in "follow" mode
   * [is-password-pwned](./is-password-pwned) - utility for check password in Cloudflare database
   * [apple-health-import.go](./apple-health-import) - Apple Health export data converter from XML to JSON/SQLite
-  * [ai-expenses](./ai-expenses) - utility for show expenses with OpenAI API
+  * [ai-expenses](./ai-expenses) - utility for show expenses with OpenAI API and Google Gemini API
   * [http-trace](./http-trace) - utility for show http request trace in terminal
   * [webarchive-extract](./webarchive-extract) - utility for extract from webarchive files
 
