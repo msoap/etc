@@ -39,6 +39,24 @@ func TestLineItemModel(t *testing.T) {
 	}
 }
 
+func TestDateWithWeekday(t *testing.T) {
+	tests := map[string]string{
+		"2026-11-16": "2026-11-16 Mo",
+		"2026-11-17": "2026-11-17 Tu",
+		"2026-11-18": "2026-11-18 We",
+		"2026-11-19": "2026-11-19 Th",
+		"2026-11-20": "2026-11-20 Fr",
+		"2026-11-21": "2026-11-21 Sa",
+		"2026-11-22": "2026-11-22 Su",
+		"bad-date":   "bad-date",
+	}
+	for date, want := range tests {
+		if got := dateWithWeekday(date); got != want {
+			t.Errorf("dateWithWeekday(%q) = %q, want %q", date, got, want)
+		}
+	}
+}
+
 func testReport() *Report {
 	r := newReport("test", time.Date(2026, 11, 20, 0, 0, 0, 0, time.UTC), 2)
 	r.HasRequests, r.HasTokens = true, true
@@ -59,24 +77,24 @@ func TestPrintColumns(t *testing.T) {
 		want                      string
 	}{
 		{"total", false, true, false, `
-date       ┊ test   ┊ other
-┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈
-2026-11-20 ┊ 1.7500 ┊  0.0000
-2026-11-21 ┊ 2.0000 ┊ 12.5000
-Total:     ┊ 3.7500 ┊ 12.5000
+date          ┊ test   ┊ other
+┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈
+2026-11-20 Fr ┊ 1.7500 ┊  0.0000
+2026-11-21 Sa ┊ 2.0000 ┊ 12.5000
+Total:        ┊ 3.7500 ┊ 12.5000
 `},
 		{"verbose", true, true, false, `
-date       ┊ test    req    in  out ┊ other     in  out
-` + strings.Repeat("┈", 11) + "┼" + strings.Repeat("┈", 24) + "┼" + strings.Repeat("┈", 18) + `
-2026-11-20 ┊ 1.7500   12  1050  105 ┊  0.0000    0    0
-2026-11-21 ┊ 2.0000    3    70    7 ┊ 12.5000  500   50
-Total:     ┊ 3.7500   15  1120  112 ┊ 12.5000  500   50
+date          ┊ test    req    in  out ┊ other     in  out
+` + strings.Repeat("┈", 14) + "┼" + strings.Repeat("┈", 24) + "┼" + strings.Repeat("┈", 18) + `
+2026-11-20 Fr ┊ 1.7500   12  1050  105 ┊  0.0000    0    0
+2026-11-21 Sa ┊ 2.0000    3    70    7 ┊ 12.5000  500   50
+Total:        ┊ 3.7500   15  1120  112 ┊ 12.5000  500   50
 `},
 		{"chart", false, false, true, `
-date       ┊ test      ┊ other
-┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
-2026-11-20 ┊ 1.7500 🬋🬃 ┊  0.0000
-2026-11-21 ┊ 2.0000 🬋🬃 ┊ 12.5000 🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
+date          ┊ test      ┊ other
+┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+2026-11-20 Fr ┊ 1.7500 🬋🬃 ┊  0.0000
+2026-11-21 Sa ┊ 2.0000 🬋🬃 ┊ 12.5000 🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
 `},
 	}
 	for _, tt := range tests {
@@ -97,51 +115,51 @@ func TestPrintReport(t *testing.T) {
 		want                    string
 	}{
 		{"default", false, false, false, `
-2026-11-20 1.7500
-2026-11-21 2.0000
+2026-11-20 Fr 1.7500
+2026-11-21 Sa 2.0000
 Total: 3.7500
 `},
 		{"default-chart", false, false, true, `
-2026-11-20 1.7500 🬋🬋🬋🬋🬋🬋🬋🬋🬋
-2026-11-21 2.0000 🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
+2026-11-20 Fr 1.7500 🬋🬋🬋🬋🬋🬋🬋🬋🬋
+2026-11-21 Sa 2.0000 🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
 Total: 3.7500
 `},
 		{"by-model-chart", true, false, true, `
-2026-11-20  1.7500  🬋🬋🬋🬋🬋🬋🬋🬋🬋
-  model-a   1.5000  🬋🬋🬋🬋🬋🬋🬋🬃
-  model-b   0.2500  🬋🬃
-2026-11-21  2.0000  🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
-  model-b   2.0000  🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
-Total:      3.7500
-  model-b   2.2500  🬋🬋🬋🬋🬋🬋
-  model-a   1.5000  🬋🬋🬋🬋
+2026-11-20 Fr  1.7500  🬋🬋🬋🬋🬋🬋🬋🬋🬋
+  model-a      1.5000  🬋🬋🬋🬋🬋🬋🬋🬃
+  model-b      0.2500  🬋🬃
+2026-11-21 Sa  2.0000  🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
+  model-b      2.0000  🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
+Total:         3.7500
+  model-b      2.2500  🬋🬋🬋🬋🬋🬋
+  model-a      1.5000  🬋🬋🬋🬋
 `},
 		{"by-model", true, false, false, `
-2026-11-20  1.7500
-  model-a   1.5000
-  model-b   0.2500
-2026-11-21  2.0000
-  model-b   2.0000
-Total:      3.7500
-  model-b   2.2500
-  model-a   1.5000
+2026-11-20 Fr  1.7500
+  model-a      1.5000
+  model-b      0.2500
+2026-11-21 Sa  2.0000
+  model-b      2.0000
+Total:         3.7500
+  model-b      2.2500
+  model-a      1.5000
 `},
 		{"verbose", false, true, false, `
-date          cost  requests  input_tokens  output_tokens
-2026-11-20  1.7500        12          1050            105
-2026-11-21  2.0000         3            70              7
-Total:      3.7500        15          1120            112
+date             cost  requests  input_tokens  output_tokens
+2026-11-20 Fr  1.7500        12          1050            105
+2026-11-21 Sa  2.0000         3            70              7
+Total:         3.7500        15          1120            112
 `},
 		{"by-model-verbose", true, true, false, `
-date          cost  requests  input_tokens  output_tokens
-2026-11-20  1.7500        12          1050            105
-  model-a   1.5000        10          1000            100
-  model-b   0.2500         2            50              5
-2026-11-21  2.0000         3            70              7
-  model-b   2.0000         3            70              7
-Total:      3.7500        15          1120            112
-  model-b   2.2500         5           120             12
-  model-a   1.5000        10          1000            100
+date             cost  requests  input_tokens  output_tokens
+2026-11-20 Fr  1.7500        12          1050            105
+  model-a      1.5000        10          1000            100
+  model-b      0.2500         2            50              5
+2026-11-21 Sa  2.0000         3            70              7
+  model-b      2.0000         3            70              7
+Total:         3.7500        15          1120            112
+  model-b      2.2500         5           120             12
+  model-a      1.5000        10          1000            100
 `},
 	}
 	for _, tt := range tests {

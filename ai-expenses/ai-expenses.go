@@ -434,6 +434,15 @@ func sortedModels(models map[string]*Stats) []string {
 	})
 }
 
+// dateWithWeekday returns date with two-letter weekday abbreviation: "2026-11-21" → "2026-11-21 Sa"
+func dateWithWeekday(date string) string {
+	t, err := time.Parse(time.DateOnly, date)
+	if err != nil {
+		return date
+	}
+	return date + " " + t.Weekday().String()[:2]
+}
+
 // printReport prints report, with chart days and models are scaled to the max day cost,
 // models of total section are scaled to the total cost, total line has no bar
 func printReport(w io.Writer, r *Report, byModel, verbose, showTotal, chart bool) {
@@ -462,7 +471,7 @@ func printReport(w io.Writer, r *Report, byModel, verbose, showTotal, chart bool
 		}
 
 		for _, date := range dates {
-			fmt.Fprintln(w, strings.TrimRight(fmt.Sprintf("%s %*.4f %s", date, costWidth, r.Days[date].Cost, bar(r.Days[date].Cost, maxDayCost)), " "))
+			fmt.Fprintln(w, strings.TrimRight(fmt.Sprintf("%s %*.4f %s", dateWithWeekday(date), costWidth, r.Days[date].Cost, bar(r.Days[date].Cost, maxDayCost)), " "))
 		}
 		if showTotal {
 			fmt.Fprintf(w, "Total: %.4f\n", totalCost)
@@ -511,7 +520,7 @@ func printReport(w io.Writer, r *Report, byModel, verbose, showTotal, chart bool
 	}
 
 	for _, date := range dates {
-		addDay(date, r.Days[date], maxDayCost, true)
+		addDay(dateWithWeekday(date), r.Days[date], maxDayCost, true)
 	}
 	if showTotal {
 		// total line itself is without bar (it would be always full), its models are scaled to the total cost
@@ -588,7 +597,7 @@ func printColumns(w io.Writer, reports []*Report, verbose, showTotal, chart bool
 	// each group is lines of the same height: header, dates, total
 	dateRows := [][]string{{"date"}}
 	for _, date := range dates {
-		dateRows = append(dateRows, []string{date})
+		dateRows = append(dateRows, []string{dateWithWeekday(date)})
 	}
 	if showTotal {
 		dateRows = append(dateRows, []string{"Total:"})

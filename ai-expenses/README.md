@@ -42,23 +42,23 @@ Usage
 Examples:
 
     $ OPENAI_ADMIN_KEY=sk-admin-... ai-expenses -days 3 -total
-    2026-11-19 0.1234
-    2026-11-20 0.0567
-    2026-11-21 0.0012
+    2026-11-19 Th 0.1234
+    2026-11-20 Fr 0.0567
+    2026-11-21 Sa 0.0012
     Total: 0.1813
 
     $ ai-expenses -provider gemini -gcp-project my-gemini-project -days 30 -total
 
-Output is one line per day (UTC): `YYYY-MM-DD cost`. Days without usage are shown as `0.0000`.
+Output is one line per day (UTC): `YYYY-MM-DD Wd cost`, where `Wd` is two-letter weekday (`Mo`, `Tu`, `We`, `Th`, `Fr`, `Sa`, `Su`). Days without usage are shown as `0.0000`.
 
 With `-by-model` each day (and `Total:`) is followed by its models sorted by cost, with `-verbose` requests and tokens columns are added:
 
     $ ai-expenses -by-model -verbose -days 2 -total
     date                        cost  requests  input_tokens  output_tokens
-    2026-11-20                1.7500        12          1050            105
+    2026-11-20 Fr             1.7500        12          1050            105
       gpt-4o-2024-08-06       1.5000        10          1000            100
       gpt-4o-mini-2024-07-18  0.2500         2            50              5
-    2026-11-21                2.0000         3            70              7
+    2026-11-21 Sa             2.0000         3            70              7
       gpt-4o-mini-2024-07-18  2.0000         3            70              7
     Total:                    3.7500        15          1120            112
       gpt-4o-mini-2024-07-18  2.2500         5           120             12
@@ -67,10 +67,10 @@ With `-by-model` each day (and `Total:`) is followed by its models sorted by cos
 With `-chart` each line with cost ends with a bar up to 10 characters long, drawn with [tcg](https://github.com/msoap/tcg) in 2x3 mode (1px line in the middle of the character, so the resolution is half a character). Days and models of days are scaled to the most expensive day. The `Total:` line has no bar, its models are scaled to the total cost:
 
     $ ai-expenses -by-model -days 2 -total -chart
-    2026-11-20                1.7500  🬋🬋🬋🬋🬋🬋🬋🬋🬋
+    2026-11-20 Fr             1.7500  🬋🬋🬋🬋🬋🬋🬋🬋🬋
       gpt-4o-2024-08-06       1.5000  🬋🬋🬋🬋🬋🬋🬋🬃
       gpt-4o-mini-2024-07-18  0.2500  🬋🬃
-    2026-11-21                2.0000  🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
+    2026-11-21 Sa             2.0000  🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
       gpt-4o-mini-2024-07-18  2.0000  🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
     Total:                    3.7500
       gpt-4o-mini-2024-07-18  2.2500  🬋🬋🬋🬋🬋🬋
@@ -94,20 +94,20 @@ Charts, tables and the switch work without JavaScript (SVG + CSS), JavaScript on
 With `-provider openai,gemini` the providers are printed one after another, each under its own `openai:` / `gemini:` header. With `-col` they are printed side by side, one column per provider, works with `-total` and `-chart` (all bars are scaled to the most expensive day of all providers).
 
     $ ai-expenses -provider openai,gemini -days 2 -total -chart -col
-    date       ┊ openai    ┊ gemini
-    ┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
-    2026-11-20 ┊ 1.7500 🬋🬃 ┊  0.0000
-    2026-11-21 ┊ 2.0000 🬋🬃 ┊ 12.5000 🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
-    Total:     ┊ 3.7500    ┊ 12.5000
+    date          ┊ openai    ┊ gemini
+    ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+    2026-11-20 Fr ┊ 1.7500 🬋🬃 ┊  0.0000
+    2026-11-21 Sa ┊ 2.0000 🬋🬃 ┊ 12.5000 🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
+    Total:        ┊ 3.7500    ┊ 12.5000
 
 With `-verbose` each provider gets requests (`req`), input (`in`) and output (`out`) tokens columns after the cost (Gemini has no `req`):
 
     $ ai-expenses -provider openai,gemini -days 2 -total -verbose -col
-    date       ┊ openai  req    in  out ┊ gemini    in  out
-    ┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
-    2026-11-20 ┊ 1.7500   12  1050  105 ┊  0.0000    0    0
-    2026-11-21 ┊ 2.0000    3    70    7 ┊ 12.5000  500   50
-    Total:     ┊ 3.7500   15  1120  112 ┊ 12.5000  500   50
+    date          ┊ openai  req    in  out ┊ gemini    in  out
+    ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+    2026-11-20 Fr ┊ 1.7500   12  1050  105 ┊  0.0000    0    0
+    2026-11-21 Sa ┊ 2.0000    3    70    7 ┊ 12.5000  500   50
+    Total:        ┊ 3.7500   15  1120  112 ┊ 12.5000  500   50
 
 Where the data comes from:
 
