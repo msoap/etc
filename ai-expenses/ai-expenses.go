@@ -65,6 +65,21 @@ type BigQueryResponse struct {
 	} `json:"rows"`
 }
 
+// MonitoringResponse - page of Cloud Monitoring timeSeries.list response
+type MonitoringResponse struct {
+	TimeSeries []struct {
+		Points []struct {
+			Interval struct {
+				StartTime time.Time `json:"startTime"`
+			} `json:"interval"`
+			Value struct {
+				Int64Value int64 `json:"int64Value,string"`
+			} `json:"value"`
+		} `json:"points"`
+	} `json:"timeSeries"`
+	NextPageToken string `json:"nextPageToken"`
+}
+
 type Stats struct {
 	Cost         float64
 	Requests     int64
@@ -100,6 +115,8 @@ type Report struct {
 	Days        map[string]*DayStats
 	HasRequests bool
 	HasTokens   bool
+	// NoModelRequests - requests are counted only per day, not per model (Gemini)
+	NoModelRequests bool
 }
 
 func newReport(provider string, startDate time.Time, days int) *Report {
@@ -166,6 +183,11 @@ const geminiCostQuery = "SELECT CAST(DATE(usage_start_time) AS STRING) AS usage_
 	" AND DATE(usage_start_time) >= @start_date" +
 	" GROUP BY usage_date, sku ORDER BY usage_date"
 
+// Gemini API requests of all methods and response codes, the metric has no model label
+const geminiRequestsFilter = `metric.type="serviceruntime.googleapis.com/api/request_count"` +
+	` AND resource.type="consumed_api"` +
+	` AND resource.labels.service="generativelanguage.googleapis.com"`
+
 // OpenAI usage endpoints for requests and tokens, all support group_by=model
 var openAIUsageEndpoints = []string{"completions", "embeddings", "moderations", "images", "audio_speeches", "audio_transcriptions"}
 
@@ -222,7 +244,7 @@ func doRequest(req *http.Request, token string) []byte {
 	handleError(err, "Error reading response")
 
 	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("API error (status %d): %s", resp.StatusCode, string(body))
+		log.Fatalf("API error from %s (status %d): %s", req.URL.Host, resp.StatusCode, string(body))
 	}
 
 	return body
@@ -301,9 +323,51 @@ func fetchOpenAI(key string, startDate time.Time, days int, byModel, verbose boo
 	return report
 }
 
+// addMonitoringPoints adds request counts from Cloud Monitoring points to the UTC days of their bucket start
+func addMonitoringPoints(report *Report, resp MonitoringResponse) {
+	for _, series := range resp.TimeSeries {
+		for _, point := range series.Points {
+			report.add(point.Interval.StartTime.UTC().Format(time.DateOnly), "", Stats{Requests: point.Value.Int64Value})
+		}
+	}
+}
+
+// fetchGeminiRequests adds request counts from Cloud Monitoring metric api/request_count of the project with Gemini API key,
+// hourly buckets ending at endTime (start of the current hour) are summed per UTC day,
+// so day boundaries are exact and today is included up to the last full hour
+func fetchGeminiRequests(report *Report, token, project string, startDate, endTime time.Time) {
+	params := url.Values{
+		"filter":                         {geminiRequestsFilter},
+		"interval.startTime":             {startDate.Format(time.RFC3339)},
+		"interval.endTime":               {endTime.Format(time.RFC3339)},
+		"aggregation.alignmentPeriod":    {"3600s"},
+		"aggregation.perSeriesAligner":   {"ALIGN_SUM"},
+		"aggregation.crossSeriesReducer": {"REDUCE_SUM"},
+	}
+	baseURL := fmt.Sprintf("https://monitoring.googleapis.com/v3/projects/%s/timeSeries", url.PathEscape(project))
+
+	for {
+		req, err := http.NewRequest("GET", baseURL+"?"+params.Encode(), nil)
+		handleError(err, "Error creating request")
+
+		body := doRequest(req, token)
+
+		var resp MonitoringResponse
+		err = json.Unmarshal(body, &resp)
+		handleError(err, "Error parsing response: "+string(body))
+
+		addMonitoringPoints(report, resp)
+		if resp.NextPageToken == "" {
+			return
+		}
+		params.Set("pageToken", resp.NextPageToken)
+	}
+}
+
 // fetchGemini reads net cost (after credits) from Cloud Billing export in BigQuery, auth via Application Default Credentials
-// Billing export has token counts (in usage.amount of token SKUs), but no request counts
-func fetchGemini(project, dataset string, startDate time.Time, days int, byModel bool) *Report {
+// Billing export has token counts (in usage.amount of token SKUs), but no request counts,
+// with verbose requests per day are read from Cloud Monitoring of requestsProject (default is project)
+func fetchGemini(project, requestsProject, dataset string, startDate time.Time, days int, byModel, verbose bool) *Report {
 	ctx := context.Background()
 	creds, err := google.FindDefaultCredentials(ctx, "https://www.googleapis.com/auth/cloud-platform")
 	handleError(err, "Error finding Google credentials")
@@ -369,6 +433,11 @@ func fetchGemini(project, dataset string, startDate time.Time, days int, byModel
 			model = ""
 		}
 		report.add(row.F[0].V, model, stats)
+	}
+
+	if verbose {
+		report.HasRequests, report.NoModelRequests = true, true
+		fetchGeminiRequests(report, token.AccessToken, cmp.Or(requestsProject, project), startDate, time.Now().UTC().Truncate(time.Hour))
 	}
 
 	return report
@@ -479,10 +548,14 @@ func printReport(w io.Writer, r *Report, byModel, verbose, showTotal, chart bool
 		return
 	}
 
-	row := func(name string, s *Stats) []string {
+	row := func(name string, s *Stats, isModel bool) []string {
 		cells := []string{name, fmt.Sprintf("%.4f", s.Cost)}
 		if verbose && r.HasRequests {
-			cells = append(cells, strconv.FormatInt(s.Requests, 10))
+			if isModel && r.NoModelRequests {
+				cells = append(cells, "-")
+			} else {
+				cells = append(cells, strconv.FormatInt(s.Requests, 10))
+			}
 		}
 		if verbose && r.HasTokens {
 			cells = append(cells, strconv.FormatInt(s.InputTokens, 10), strconv.FormatInt(s.OutputTokens, 10))
@@ -505,7 +578,7 @@ func printReport(w io.Writer, r *Report, byModel, verbose, showTotal, chart bool
 	}
 
 	addDay := func(name string, day *DayStats, maxCost float64, withBar bool) {
-		rows = append(rows, row(name, &day.Stats))
+		rows = append(rows, row(name, &day.Stats, false))
 		if withBar {
 			bars = append(bars, bar(day.Cost, maxCost))
 		} else {
@@ -513,7 +586,7 @@ func printReport(w io.Writer, r *Report, byModel, verbose, showTotal, chart bool
 		}
 		if byModel {
 			for _, model := range sortedModels(day.Models) {
-				rows = append(rows, row("  "+model, day.Models[model]))
+				rows = append(rows, row("  "+model, day.Models[model], true))
 				bars = append(bars, bar(day.Models[model].Cost, maxCost))
 			}
 		}
@@ -642,6 +715,7 @@ func main() {
 	apiKey := flag.String("key", "", "OpenAI API key (or set OPENAI_ADMIN_KEY env var)")
 	gcpProject := flag.String("gcp-project", os.Getenv("GOOGLE_CLOUD_PROJECT"), "GCP project with BigQuery billing export (default from GOOGLE_CLOUD_PROJECT env var or credentials)")
 	bqDataset := flag.String("bq-dataset", "billing_export", "BigQuery dataset with billing export")
+	geminiProject := flag.String("gemini-project", os.Getenv("GEMINI_GCP_PROJECT"), "GCP project of Gemini API key, for request counts from Cloud Monitoring with -verbose (default from GEMINI_GCP_PROJECT env var or -gcp-project)")
 	total := flag.Bool("total", false, "Show total cost")
 	byModel := flag.Bool("by-model", false, "Break out costs by model")
 	verbose := flag.Bool("verbose", false, "Show requests and tokens in addition to cost (when provider has them)")
@@ -682,7 +756,7 @@ func main() {
 			}
 			report = fetchOpenAI(key, startDate, *days, *byModel, *verbose)
 		case "gemini":
-			report = fetchGemini(*gcpProject, *bqDataset, startDate, *days, *byModel)
+			report = fetchGemini(*gcpProject, *geminiProject, *bqDataset, startDate, *days, *byModel, *verbose)
 		default:
 			log.Fatalf("Error: unknown provider %q, use openai, gemini or openai,gemini", provider)
 		}

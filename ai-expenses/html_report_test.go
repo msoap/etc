@@ -28,8 +28,9 @@ func TestFormatInt(t *testing.T) {
 
 func TestBuildHTMLView(t *testing.T) {
 	gemini := newReport("gemini", time.Date(2026, 11, 20, 0, 0, 0, 0, time.UTC), 2)
-	gemini.HasTokens = true
+	gemini.HasTokens, gemini.HasRequests, gemini.NoModelRequests = true, true, true
 	gemini.add("2026-11-21", "gemini-2.5-flash", Stats{Cost: 0.5, InputTokens: 300, OutputTokens: 30})
+	gemini.add("2026-11-21", "", Stats{Requests: 4})
 
 	openai := testReport()
 	openai.Provider = "openai"
@@ -38,13 +39,21 @@ func TestBuildHTMLView(t *testing.T) {
 	if view.Days != 2 || view.StartDate != "2026-11-20" || view.EndDate != "2026-11-21" {
 		t.Errorf("period = %d %s %s", view.Days, view.StartDate, view.EndDate)
 	}
-	if view.Total.Cost != 4.25 || view.Total.Requests != 15 || view.Total.InputTokens != 1420 {
+	if view.Total.Cost != 4.25 || view.Total.Requests != 19 || view.Total.InputTokens != 1420 {
 		t.Errorf("total = %+v", view.Total.Stats)
+	}
+	// gemini has requests per provider and day, but not per model
+	if p := view.Providers[1]; !p.HasRequests || p.Requests != 4 {
+		t.Errorf("gemini provider = %+v", p)
+	}
+	if day := view.DayRows[1].Providers[1]; !day.HasRequests || day.Requests != 4 || day.Models[0].HasRequests {
+		t.Errorf("gemini on 2026-11-21 = %+v", day)
 	}
 	if view.PeakDay.Name != "2026-11-21" || view.PeakDay.Cost != 2.5 {
 		t.Errorf("peak day = %s %v", view.PeakDay.Name, view.PeakDay.Cost)
 	}
-	if len(view.Models) != 3 || view.Models[0].Name != "model-b" || view.Models[0].Color != "s1" || view.Models[2].Name != "gemini-2.5-flash" {
+	if len(view.Models) != 3 || view.Models[0].Name != "model-b" || view.Models[0].Color != "s1" || view.Models[2].Name != "gemini-2.5-flash" ||
+		!view.Models[0].HasRequests || view.Models[2].HasRequests {
 		t.Errorf("models = %+v", view.Models)
 	}
 	// color of model is the same in all days

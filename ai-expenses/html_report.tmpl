@@ -288,7 +288,7 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
     <div class="card tile">
       <div class="label">Requests</div>
       <div class="value">{{if .Total.HasRequests}}{{int .Total.Requests}}{{else}}—{{end}}</div>
-      <div class="note">{{$noReq := false}}{{range .Providers}}{{if not .HasRequests}}{{$noReq = true}}{{end}}{{end}}{{if $noReq}}not available for{{range .Providers}}{{if not .HasRequests}} {{.Name}}{{end}}{{end}}{{else}}model requests{{end}}</div>
+      <div class="note">{{$noReq := false}}{{range .Providers}}{{if not .HasRequests}}{{$noReq = true}}{{end}}{{end}}{{if $noReq}}not available for{{range .Providers}}{{if not .HasRequests}} {{.Name}}{{end}}{{end}}{{else}}API requests{{end}}</div>
     </div>
     <div class="card tile">
       <div class="label">Input tokens</div>
@@ -433,7 +433,7 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
   <ul>
     <li>Days are in UTC. Cost is in the billing currency of the provider account (USD for OpenAI), the last 1–2 days can still change.</li>
     <li>OpenAI: cost from Costs API by line item, requests and tokens from Usage API by model.</li>
-    <li>Gemini: net cost (after credits) and tokens from Cloud Billing export to BigQuery, model is taken from the SKU description. Billing export has no request counts.</li>
+    <li>Gemini: net cost (after credits) and tokens from Cloud Billing export to BigQuery, model is taken from the SKU description. Requests per day (all response codes) from Cloud Monitoring metric <code>api/request_count</code>, it has no model label, so there are no requests by model. Monitoring keeps it for 6 weeks.</li>
     <li>Click a column header to sort a table (needs JavaScript), everything else works without it.</li>
   </ul>
 </footer>

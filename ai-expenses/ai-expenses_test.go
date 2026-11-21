@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 	"time"
@@ -170,5 +171,52 @@ Total:         3.7500        15          1120            112
 				t.Errorf("got:\n%s\nwant:\n%s", out.String(), want)
 			}
 		})
+	}
+}
+
+func TestPrintReportNoModelRequests(t *testing.T) {
+	r := newReport("gemini", time.Date(2026, 11, 20, 0, 0, 0, 0, time.UTC), 1)
+	r.HasRequests, r.HasTokens, r.NoModelRequests = true, true, true
+	r.add("2026-11-20", "gemini-2.5-flash", Stats{Cost: 0.5, InputTokens: 300, OutputTokens: 30})
+	r.add("2026-11-20", "", Stats{Requests: 7})
+
+	var out strings.Builder
+	printReport(&out, r, true, true, true, false)
+	want := `date                  cost  requests  input_tokens  output_tokens
+2026-11-20 Fr       0.5000         7           300             30
+  gemini-2.5-flash  0.5000         -           300             30
+Total:              0.5000         7           300             30
+  gemini-2.5-flash  0.5000         -           300             30
+`
+	if out.String() != want {
+		t.Errorf("got:\n%s\nwant:\n%s", out.String(), want)
+	}
+}
+
+func TestAddMonitoringPoints(t *testing.T) {
+	// hourly buckets (newest first, as API returns them): 2 in 2026-11-20, 1 in 2026-11-21
+	body := `{"timeSeries": [{"points": [
+		{"interval": {"startTime": "2026-11-21T00:00:00Z", "endTime": "2026-11-21T01:00:00Z"}, "value": {"int64Value": "5"}},
+		{"interval": {"startTime": "2026-11-20T23:00:00Z", "endTime": "2026-11-21T00:00:00Z"}, "value": {"int64Value": "3"}},
+		{"interval": {"startTime": "2026-11-20T00:00:00.000Z", "endTime": "2026-11-20T01:00:00Z"}, "value": {"int64Value": "441"}}
+	]}], "nextPageToken": "next"}`
+
+	var resp MonitoringResponse
+	if err := json.Unmarshal([]byte(body), &resp); err != nil {
+		t.Fatal(err)
+	}
+	if resp.NextPageToken != "next" {
+		t.Errorf("NextPageToken = %q, want %q", resp.NextPageToken, "next")
+	}
+
+	r := newReport("gemini", time.Date(2026, 11, 20, 0, 0, 0, 0, time.UTC), 3)
+	addMonitoringPoints(r, resp)
+	for date, want := range map[string]int64{"2026-11-20": 444, "2026-11-21": 5, "2026-11-22": 0} {
+		if got := r.Days[date].Requests; got != want {
+			t.Errorf("requests of %s = %d, want %d", date, got, want)
+		}
+	}
+	if len(r.Days) != 3 || len(r.Days["2026-11-20"].Models) != 0 {
+		t.Errorf("unexpected days or models: %v", r.Days)
 	}
 }

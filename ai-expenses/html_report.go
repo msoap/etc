@@ -224,7 +224,7 @@ func buildHTMLView(reports []*Report, now time.Time) htmlView {
 			view.Models = append(view.Models, htmlRow{
 				Provider:    providerTitle(r.Provider),
 				Name:        model,
-				HasRequests: r.HasRequests,
+				HasRequests: r.HasRequests && !r.NoModelRequests,
 				Share:       pct(s.Cost, view.Total.Cost),
 				Stats:       *s,
 			})
@@ -270,7 +270,7 @@ func buildHTMLView(reports []*Report, now time.Time) htmlView {
 					Provider:    providerTitle(r.Provider),
 					Name:        model,
 					Color:       modelColors[modelKey(providerTitle(r.Provider), model)],
-					HasRequests: r.HasRequests,
+					HasRequests: r.HasRequests && !r.NoModelRequests,
 					Stats:       *dayStats.Models[model],
 				})
 			}

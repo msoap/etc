@@ -4,7 +4,7 @@ ai-expenses
 Utility for show daily expenses for OpenAI API and Google Gemini API.
 
   * OpenAI: uses [Costs API](https://platform.openai.com/docs/api-reference/usage/costs) with an admin key
-  * Gemini: Gemini API has no usage/cost endpoint, so costs are read from [Cloud Billing export to BigQuery](https://cloud.google.com/billing/docs/how-to/export-data-bigquery), auth via [Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials)
+  * Gemini: Gemini API has no usage/cost endpoint, so costs are read from [Cloud Billing export to BigQuery](https://cloud.google.com/billing/docs/how-to/export-data-bigquery), requests per day (with `-verbose`) from [Cloud Monitoring](https://cloud.google.com/monitoring/api/metrics_gcp_p_z#gcp-serviceruntime), auth via [Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials)
 
 Install
 -------
@@ -38,6 +38,8 @@ Usage
         GCP project with BigQuery billing export (default from GOOGLE_CLOUD_PROJECT env var or credentials)
     -bq-dataset string
         BigQuery dataset with billing export (default "billing_export")
+    -gemini-project string
+        GCP project of Gemini API key, for request counts from Cloud Monitoring with -verbose (default from GEMINI_GCP_PROJECT env var or -gcp-project)
 
 Examples:
 
@@ -100,19 +102,19 @@ With `-provider openai,gemini` the providers are printed one after another, each
     2026-11-21 Sa ┊ 2.0000 🬋🬃 ┊ 12.5000 🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
     Total:        ┊ 3.7500    ┊ 12.5000
 
-With `-verbose` each provider gets requests (`req`), input (`in`) and output (`out`) tokens columns after the cost (Gemini has no `req`):
+With `-verbose` each provider gets requests (`req`), input (`in`) and output (`out`) tokens columns after the cost:
 
     $ ai-expenses -provider openai,gemini -days 2 -total -verbose -col
-    date          ┊ openai  req    in  out ┊ gemini    in  out
-    ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
-    2026-11-20 Fr ┊ 1.7500   12  1050  105 ┊  0.0000    0    0
-    2026-11-21 Sa ┊ 2.0000    3    70    7 ┊ 12.5000  500   50
-    Total:        ┊ 3.7500   15  1120  112 ┊ 12.5000  500   50
+    date          ┊ openai  req    in  out ┊ gemini   req   in  out
+    ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+    2026-11-20 Fr ┊ 1.7500   12  1050  105 ┊  0.0000    0    0    0
+    2026-11-21 Sa ┊ 2.0000    3    70    7 ┊ 12.5000    4  500   50
+    Total:        ┊ 3.7500   15  1120  112 ┊ 12.5000    4  500   50
 
 Where the data comes from:
 
   * OpenAI: costs per model from Costs API grouped by `line_item` (`"gpt-4o-2024-08-06, input"` → `gpt-4o-2024-08-06`), requests and tokens from [Usage API](https://platform.openai.com/docs/api-reference/usage) (completions, embeddings, moderations, images, audio) grouped by model. Model names in costs and in usage may differ for some line items, in that case they are shown as separate rows
-  * Gemini: model and token direction are parsed from SKU description, e.g. `Generate content input token count gemini 2.5 flash lite short input text` → `gemini-2.5-flash-lite`, input tokens = `usage.amount` (`usage.unit` says `requests`, but it's a token count). Billing export has no request counts, so the `requests` column is not shown for Gemini. Non-token SKUs (e.g. grounding) are shown with SKU description as model name
+  * Gemini: model and token direction are parsed from SKU description, e.g. `Generate content input token count gemini 2.5 flash lite short input text` → `gemini-2.5-flash-lite`, input tokens = `usage.amount` (`usage.unit` says `requests`, but it's a token count). Non-token SKUs (e.g. grounding) are shown with SKU description as model name. Billing export has no request counts, so with `-verbose` requests are read from Cloud Monitoring metric `serviceruntime.googleapis.com/api/request_count` of the project with Gemini API key (`-gemini-project`): all methods and response codes (errors included), hourly buckets summed per UTC day, today up to the last full hour. The metric has no model label, so with `-by-model` model rows have `-` in `requests`. Monitoring keeps this metric for 6 weeks, older days have 0 requests
 
 OpenAI setup
 ------------
@@ -157,6 +159,10 @@ The account that runs the utility needs these roles in the project with the data
   * `roles/bigquery.jobUser` - for run queries
   * `roles/bigquery.dataViewer` - for read billing export table
 
+For requests with `-verbose`, also in the project with Gemini API key (AI Studio creates projects like `gen-lang-client-0123456789`, pass it with `-gemini-project` if it's not the dataset project):
+
+  * `roles/monitoring.viewer` - for read `api/request_count` metric (`roles/viewer`, `roles/editor`, `roles/owner` also include it)
+
 #### Locally
 
     gcloud auth application-default login
@@ -188,10 +194,16 @@ Grant roles to the VM service account in the project with the dataset (it can be
     gcloud projects add-iam-policy-binding PROJECT_ID \
       --member=serviceAccount:SA_EMAIL --role=roles/bigquery.dataViewer
 
+For requests with `-verbose`, grant Monitoring access in the project with Gemini API key:
+
+    gcloud projects add-iam-policy-binding GEMINI_PROJECT_ID \
+      --member=serviceAccount:SA_EMAIL --role=roles/monitoring.viewer
+
 Build for the VM and run it there:
 
     GOOS=linux GOARCH=amd64 go build -o ai-expenses .
     ./ai-expenses -provider gemini -gcp-project PROJECT_ID
+    ./ai-expenses -provider gemini -gcp-project PROJECT_ID -gemini-project GEMINI_PROJECT_ID -verbose
 
 If the dataset is in the same project as the VM, `-gcp-project` can be omitted.
 
@@ -209,4 +221,7 @@ Billing export is free. BigQuery free tier is 10 GB storage and 1 TiB queries pe
   * `403 ... insufficient authentication scopes` - VM access scopes don't include BigQuery, see above
   * `403 ... Access Denied` / `permission bigquery.jobs.create` - roles are not granted in the dataset project, or wrong `-gcp-project`
   * `Not found: Table ...` - billing export has not written any data yet
+  * `403 ... monitoring.timeSeries.list` - `roles/monitoring.viewer` is not granted in the Gemini API key project, or wrong `-gemini-project`
+  * `403 ... Cloud Monitoring API has not been used in project ...` - enable it in the project from the message: `gcloud services enable monitoring.googleapis.com --project=PROJECT_ID`
+  * all requests are `0` - wrong `-gemini-project` (no Gemini API traffic there), or days are older than 6 weeks
   * all days are `0.0000` - check with the query above that the table already has data for these days (backfill may still be in progress) and that there are `Gemini API` rows
