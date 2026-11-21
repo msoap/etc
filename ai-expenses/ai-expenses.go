@@ -390,9 +390,8 @@ func costBar(cost, maxCost float64) string {
 	return buf.RenderAsStrings(tcg.Mode2x3)[0]
 }
 
-// printTable prints rows as aligned columns: first column to the left, others to the right,
-// bars (if not empty) are added at the end of lines
-func printTable(w io.Writer, rows [][]string, bars []string) {
+// alignTable formats rows as columns separated by 2 spaces: first column to the left, others to the right
+func alignTable(rows [][]string) []string {
 	var widths []int
 	for _, row := range rows {
 		for i, cell := range row {
@@ -403,6 +402,7 @@ func printTable(w io.Writer, rows [][]string, bars []string) {
 		}
 	}
 
+	lines := make([]string, len(rows))
 	for n, row := range rows {
 		line := make([]string, len(row))
 		for i, cell := range row {
@@ -412,10 +412,18 @@ func printTable(w io.Writer, rows [][]string, bars []string) {
 				line[i] = fmt.Sprintf("%*s", widths[i], cell)
 			}
 		}
+		lines[n] = strings.Join(line, "  ")
+	}
+	return lines
+}
+
+// printTable prints rows as aligned columns, bars (if not empty) are added at the end of lines
+func printTable(w io.Writer, rows [][]string, bars []string) {
+	for n, line := range alignTable(rows) {
 		if n < len(bars) && bars[n] != "" {
-			line = append(line, bars[n])
+			line += "  " + bars[n]
 		}
-		fmt.Fprintln(w, strings.TrimRight(strings.Join(line, "  "), " "))
+		fmt.Fprintln(w, strings.TrimRight(line, " "))
 	}
 }
 
@@ -514,6 +522,111 @@ func printReport(w io.Writer, r *Report, byModel, verbose, showTotal, chart bool
 	printTable(w, rows, bars)
 }
 
+// providerColumns formats provider columns for printColumns: header line, line per date, total line,
+// first column is cost (with bar) under provider name, with verbose requests and tokens columns are added
+func providerColumns(r *Report, dates []string, maxDayCost float64, verbose, showTotal, chart bool) []string {
+	stats := make([]Stats, 0, len(dates)+1)
+	var total Stats
+	for _, date := range dates {
+		var s Stats
+		if day := r.Days[date]; day != nil {
+			s = day.Stats
+		}
+		total.add(s)
+		stats = append(stats, s)
+	}
+	if showTotal {
+		stats = append(stats, total)
+	}
+
+	costWidth := 0
+	for _, s := range stats {
+		costWidth = max(costWidth, len(fmt.Sprintf("%.4f", s.Cost)))
+	}
+
+	// short headers to fit several providers into terminal width
+	header := []string{r.Provider}
+	if verbose && r.HasRequests {
+		header = append(header, "req")
+	}
+	if verbose && r.HasTokens {
+		header = append(header, "in", "out")
+	}
+
+	rows := [][]string{header}
+	for i, s := range stats {
+		bar := ""
+		if chart && i < len(dates) { // total line has no bar
+			bar = costBar(s.Cost, maxDayCost)
+		}
+		row := []string{strings.TrimRight(fmt.Sprintf("%*.4f %s", costWidth, s.Cost, bar), " ")}
+		if verbose && r.HasRequests {
+			row = append(row, strconv.FormatInt(s.Requests, 10))
+		}
+		if verbose && r.HasTokens {
+			row = append(row, strconv.FormatInt(s.InputTokens, 10), strconv.FormatInt(s.OutputTokens, 10))
+		}
+		rows = append(rows, row)
+	}
+
+	return alignTable(rows)
+}
+
+// printColumns prints reports side by side, columns of each provider are separated by "┊",
+// with chart all days are scaled to the max day cost of all providers, total line has no bar
+func printColumns(w io.Writer, reports []*Report, verbose, showTotal, chart bool) {
+	dateSet := map[string]bool{}
+	maxDayCost := 0.0
+	for _, r := range reports {
+		for date, day := range r.Days {
+			dateSet[date] = true
+			maxDayCost = max(maxDayCost, day.Cost)
+		}
+	}
+	dates := slices.Sorted(maps.Keys(dateSet))
+
+	// each group is lines of the same height: header, dates, total
+	dateRows := [][]string{{"date"}}
+	for _, date := range dates {
+		dateRows = append(dateRows, []string{date})
+	}
+	if showTotal {
+		dateRows = append(dateRows, []string{"Total:"})
+	}
+	groups := [][]string{alignTable(dateRows)}
+	for _, r := range reports {
+		groups = append(groups, providerColumns(r, dates, maxDayCost, verbose, showTotal, chart))
+	}
+
+	widths := make([]int, len(groups))
+	for g, lines := range groups {
+		for _, line := range lines {
+			widths[g] = max(widths[g], utf8.RuneCountInString(line))
+		}
+	}
+
+	for i := range groups[0] {
+		if i == 1 {
+			separator := make([]string, len(widths))
+			for g, width := range widths {
+				// " ┊ " between groups: 1 space on the outer side of the first and the last groups, 2 for others
+				n := width + 2
+				if g == 0 || g == len(widths)-1 {
+					n--
+				}
+				separator[g] = strings.Repeat("┈", n)
+			}
+			fmt.Fprintln(w, strings.Join(separator, "┼"))
+		}
+
+		cells := make([]string, len(groups))
+		for g, lines := range groups {
+			cells[g] = fmt.Sprintf("%-*s", widths[g], lines[i])
+		}
+		fmt.Fprintln(w, strings.TrimRight(strings.Join(cells, " ┊ "), " "))
+	}
+}
+
 func main() {
 	days := flag.Int("days", 7, "Number of days to retrieve")
 	providers := flag.String("provider", "openai", "Provider: openai, gemini or both comma separated: openai,gemini")
@@ -524,18 +637,24 @@ func main() {
 	byModel := flag.Bool("by-model", false, "Break out costs by model")
 	verbose := flag.Bool("verbose", false, "Show requests and tokens in addition to cost (when provider has them)")
 	chart := flag.Bool("chart", false, "Show cost as horizontal bar chart at the end of lines")
-	htmlReport := flag.String("html-report", "", "Save HTML report to file, it always contains break out by models, requests and tokens (can't be used with -by-model, -verbose, -total, -chart)")
+	htmlReport := flag.String("html-report", "", "Save HTML report to file, it always contains break out by models, requests and tokens (can't be used with -by-model, -verbose, -total, -chart, -col)")
+	columns := flag.Bool("col", false, "Show each provider in its own columns (can't be used with -by-model)")
 	flag.Parse()
+	log.SetFlags(log.LstdFlags | log.Lmsgprefix) // prefix with provider after the timestamp
 
 	if *htmlReport != "" {
 		flag.Visit(func(f *flag.Flag) {
 			switch f.Name {
-			case "by-model", "verbose", "total", "chart":
+			case "by-model", "verbose", "total", "chart", "col":
 				log.Fatalf("Error: -%s can't be used with -html-report, HTML report always contains all statistics", f.Name)
 			}
 		})
 		*byModel, *verbose = true, true
 	}
+	if *columns && *byModel {
+		log.Fatal("Error: -col can't be used with -by-model")
+	}
+	collect := *htmlReport != "" || *columns
 
 	startDate := time.Now().UTC().AddDate(0, 0, -*days+1).Truncate(24 * time.Hour)
 
@@ -543,6 +662,8 @@ func main() {
 	providerList := strings.Split(*providers, ",")
 	for i, provider := range providerList {
 		provider = strings.TrimSpace(provider)
+		// all errors while fetching are fatal, show which provider failed: "2026/11/21 21:30:47 openai: API error ..."
+		log.SetPrefix(provider + ": ")
 		var report *Report
 		switch provider {
 		case "openai":
@@ -556,8 +677,9 @@ func main() {
 		default:
 			log.Fatalf("Error: unknown provider %q, use openai, gemini or openai,gemini", provider)
 		}
+		log.SetPrefix("")
 
-		if *htmlReport != "" {
+		if collect {
 			reports = append(reports, report)
 			continue
 		}
@@ -571,8 +693,11 @@ func main() {
 		printReport(os.Stdout, report, *byModel, *verbose, *total, *chart)
 	}
 
-	if *htmlReport != "" {
+	switch {
+	case *htmlReport != "":
 		writeHTMLReport(*htmlReport, reports)
 		fmt.Printf("HTML report saved to %s\n", *htmlReport)
+	case *columns:
+		printColumns(os.Stdout, reports, *verbose, *total, *chart)
 	}
 }

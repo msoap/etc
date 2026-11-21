@@ -28,8 +28,10 @@ Usage
         Show requests and tokens in addition to cost (when provider has them)
     -chart
         Show cost as horizontal bar chart at the end of lines
+    -col
+        Show each provider in its own columns (can't be used with -by-model)
     -html-report string
-        Save HTML report to file, it always contains break out by models, requests and tokens (can't be used with -by-model, -verbose, -total, -chart)
+        Save HTML report to file, it always contains break out by models, requests and tokens (can't be used with -by-model, -verbose, -total, -chart, -col)
     -key string
         OpenAI API key (or set OPENAI_ADMIN_KEY env var)
     -gcp-project string
@@ -89,7 +91,23 @@ One self-contained HTML file (no external resources, template is embedded into t
 
 Charts, tables and the switch work without JavaScript (SVG + CSS), JavaScript only adds sorting tables by click on column header and remembers the switch state. Light and dark themes follow the system setting.
 
-With `-provider openai,gemini` the providers are printed one after another, each under its own `openai:` / `gemini:` header.
+With `-provider openai,gemini` the providers are printed one after another, each under its own `openai:` / `gemini:` header. With `-col` they are printed side by side, one column per provider, works with `-total` and `-chart` (all bars are scaled to the most expensive day of all providers).
+
+    $ ai-expenses -provider openai,gemini -days 2 -total -chart -col
+    date       ┊ openai    ┊ gemini
+    ┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+    2026-11-20 ┊ 1.7500 🬋🬃 ┊  0.0000
+    2026-11-21 ┊ 2.0000 🬋🬃 ┊ 12.5000 🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
+    Total:     ┊ 3.7500    ┊ 12.5000
+
+With `-verbose` each provider gets requests (`req`), input (`in`) and output (`out`) tokens columns after the cost (Gemini has no `req`):
+
+    $ ai-expenses -provider openai,gemini -days 2 -total -verbose -col
+    date       ┊ openai  req    in  out ┊ gemini    in  out
+    ┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+    2026-11-20 ┊ 1.7500   12  1050  105 ┊  0.0000    0    0
+    2026-11-21 ┊ 2.0000    3    70    7 ┊ 12.5000  500   50
+    Total:     ┊ 3.7500   15  1120  112 ┊ 12.5000  500   50
 
 Where the data comes from:
 

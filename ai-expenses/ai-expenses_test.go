@@ -48,6 +48,48 @@ func testReport() *Report {
 	return r
 }
 
+func TestPrintColumns(t *testing.T) {
+	other := newReport("other", time.Date(2026, 11, 20, 0, 0, 0, 0, time.UTC), 2)
+	other.HasTokens = true // like gemini: tokens without requests
+	other.add("2026-11-21", "", Stats{Cost: 12.5, InputTokens: 500, OutputTokens: 50})
+
+	tests := []struct {
+		name                      string
+		verbose, showTotal, chart bool
+		want                      string
+	}{
+		{"total", false, true, false, `
+date       ┊ test   ┊ other
+┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈
+2026-11-20 ┊ 1.7500 ┊  0.0000
+2026-11-21 ┊ 2.0000 ┊ 12.5000
+Total:     ┊ 3.7500 ┊ 12.5000
+`},
+		{"verbose", true, true, false, `
+date       ┊ test    req    in  out ┊ other     in  out
+` + strings.Repeat("┈", 11) + "┼" + strings.Repeat("┈", 24) + "┼" + strings.Repeat("┈", 18) + `
+2026-11-20 ┊ 1.7500   12  1050  105 ┊  0.0000    0    0
+2026-11-21 ┊ 2.0000    3    70    7 ┊ 12.5000  500   50
+Total:     ┊ 3.7500   15  1120  112 ┊ 12.5000  500   50
+`},
+		{"chart", false, false, true, `
+date       ┊ test      ┊ other
+┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+2026-11-20 ┊ 1.7500 🬋🬃 ┊  0.0000
+2026-11-21 ┊ 2.0000 🬋🬃 ┊ 12.5000 🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
+`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var out strings.Builder
+			printColumns(&out, []*Report{testReport(), other}, tt.verbose, tt.showTotal, tt.chart)
+			if want := strings.TrimPrefix(tt.want, "\n"); out.String() != want {
+				t.Errorf("got:\n%s\nwant:\n%s", out.String(), want)
+			}
+		})
+	}
+}
+
 func TestPrintReport(t *testing.T) {
 	tests := []struct {
 		name                    string
