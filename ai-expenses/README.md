@@ -17,11 +17,19 @@ Usage
     ai-expenses [options]
 
     -provider string
-        Provider: openai or gemini (default "openai")
+        Provider: openai, gemini or both comma separated: openai,gemini (default "openai")
     -days int
         Number of days to retrieve (default 7)
     -total
         Show total cost
+    -by-model
+        Break out costs by model
+    -verbose
+        Show requests and tokens in addition to cost (when provider has them)
+    -chart
+        Show cost as horizontal bar chart at the end of lines
+    -html-report string
+        Save HTML report to file, it always contains break out by models, requests and tokens (can't be used with -by-model, -verbose, -total, -chart)
     -key string
         OpenAI API key (or set OPENAI_ADMIN_KEY env var)
     -gcp-project string
@@ -40,6 +48,53 @@ Examples:
     $ ai-expenses -provider gemini -gcp-project my-gemini-project -days 30 -total
 
 Output is one line per day (UTC): `YYYY-MM-DD cost`. Days without usage are shown as `0.0000`.
+
+With `-by-model` each day (and `Total:`) is followed by its models sorted by cost, with `-verbose` requests and tokens columns are added:
+
+    $ ai-expenses -by-model -verbose -days 2 -total
+    date                        cost  requests  input_tokens  output_tokens
+    2026-11-20                1.7500        12          1050            105
+      gpt-4o-2024-08-06       1.5000        10          1000            100
+      gpt-4o-mini-2024-07-18  0.2500         2            50              5
+    2026-11-21                2.0000         3            70              7
+      gpt-4o-mini-2024-07-18  2.0000         3            70              7
+    Total:                    3.7500        15          1120            112
+      gpt-4o-mini-2024-07-18  2.2500         5           120             12
+      gpt-4o-2024-08-06       1.5000        10          1000            100
+
+With `-chart` each line with cost ends with a bar up to 10 characters long, drawn with [tcg](https://github.com/msoap/tcg) in 2x3 mode (1px line in the middle of the character, so the resolution is half a character). Days and models of days are scaled to the most expensive day. The `Total:` line has no bar, its models are scaled to the total cost:
+
+    $ ai-expenses -by-model -days 2 -total -chart
+    2026-11-20                1.7500  🬋🬋🬋🬋🬋🬋🬋🬋🬋
+      gpt-4o-2024-08-06       1.5000  🬋🬋🬋🬋🬋🬋🬋🬃
+      gpt-4o-mini-2024-07-18  0.2500  🬋🬃
+    2026-11-21                2.0000  🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
+      gpt-4o-mini-2024-07-18  2.0000  🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
+    Total:                    3.7500
+      gpt-4o-mini-2024-07-18  2.2500  🬋🬋🬋🬋🬋🬋
+      gpt-4o-2024-08-06       1.5000  🬋🬋🬋🬋
+
+2x3 symbols are from Unicode "Symbols for Legacy Computing" block, they are supported by Iosevka font and some terminals.
+
+### HTML report
+
+    $ ai-expenses -provider openai,gemini -days 30 -html-report ai-expenses.html
+    HTML report saved to ai-expenses.html
+
+One self-contained HTML file (no external resources, template is embedded into the binary) with all providers together:
+
+  * tiles: total cost, average per day, the most expensive day, requests, input/output tokens
+  * cost share bar, daily cost chart (stacked columns), tables by provider/model and by day, heatmap cost by day and provider/model
+  * "Break out by model" switch - shows all charts and tables by providers or by models
+
+Charts, tables and the switch work without JavaScript (SVG + CSS), JavaScript only adds sorting tables by click on column header and remembers the switch state. Light and dark themes follow the system setting.
+
+With `-provider openai,gemini` the providers are printed one after another, each under its own `openai:` / `gemini:` header.
+
+Where the data comes from:
+
+  * OpenAI: costs per model from Costs API grouped by `line_item` (`"gpt-4o-2024-08-06, input"` → `gpt-4o-2024-08-06`), requests and tokens from [Usage API](https://platform.openai.com/docs/api-reference/usage) (completions, embeddings, moderations, images, audio) grouped by model. Model names in costs and in usage may differ for some line items, in that case they are shown as separate rows
+  * Gemini: model and token direction are parsed from SKU description, e.g. `Generate content input token count gemini 2.5 flash lite short input text` → `gemini-2.5-flash-lite`, input tokens = `usage.amount` (`usage.unit` says `requests`, but it's a token count). Billing export has no request counts, so the `requests` column is not shown for Gemini. Non-token SKUs (e.g. grounding) are shown with SKU description as model name
 
 OpenAI setup
 ------------

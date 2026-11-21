@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI expenses {{.StartDate}} – {{.EndDate}}</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --text: #0b0b0b;
+  --text-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.10);
+  --track: #efeee9;
+  --hover: rgba(11, 11, 11, 0.04);
+  --bar: #52514e;
+  --accent: #2a78d6;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --s5: #e87ba4; --s6: #008300; --s7: #6250d6; --s8: #e34948; --s-other: #b4b2a9;
+  --h1: #cde2fb; --h2: #9ec5f4; --h3: #6da7ec; --h4: #3987e5; --h5: #256abf; --h6: #184f95;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --text: #f0efec;
+    --text-2: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255, 255, 255, 0.10);
+    --track: #2c2c2a;
+    --hover: rgba(255, 255, 255, 0.05);
+    --bar: #c3c2b7;
+    --accent: #3987e5;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+    --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767; --s-other: #6b6a65;
+    --h1: #104281; --h2: #184f95; --h3: #256abf; --h4: #2a78d6; --h5: #5598e7; --h6: #9ec5f4;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --text: #f0efec;
+  --text-2: #c3c2b7;
+  --muted: #898781;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --border: rgba(255, 255, 255, 0.10);
+  --track: #2c2c2a;
+  --hover: rgba(255, 255, 255, 0.05);
+  --bar: #c3c2b7;
+  --accent: #3987e5;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+  --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767; --s-other: #6b6a65;
+  --h1: #104281; --h2: #184f95; --h3: #256abf; --h4: #2a78d6; --h5: #5598e7; --h6: #9ec5f4;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--text);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+main { max-width: 1120px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 22px; font-weight: 650; margin: 0; letter-spacing: -0.01em; }
+h2 { font-size: 15px; font-weight: 600; margin: 0 0 12px; }
+.sub-title { color: var(--text-2); margin: 4px 0 0; }
+.muted { color: var(--muted); }
+section { margin-top: 20px; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+.card-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+.card-head h2 { margin: 0; }
+
+/* series colors: --c is used by svg segments, swatches and inline bars */
+.s1 { --c: var(--s1); } .s2 { --c: var(--s2); } .s3 { --c: var(--s3); } .s4 { --c: var(--s4); }
+.s5 { --c: var(--s5); } .s6 { --c: var(--s6); } .s7 { --c: var(--s7); } .s8 { --c: var(--s8); }
+.s-other { --c: var(--s-other); }
+
+/* models switch, works without JS: checkbox is placed before main, elements are only hidden, never re-displayed */
+.toggle { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+#by-model:not(:checked) ~ main .m-on { display: none; }
+#by-model:checked ~ main .m-off { display: none; }
+
+.controls {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center;
+  margin: 20px -16px 0; padding: 10px 16px;
+  background: color-mix(in srgb, var(--page) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.controls nav { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-left: auto; }
+.controls nav a { color: var(--text-2); text-decoration: none; }
+.controls nav a:hover { color: var(--text); text-decoration: underline; }
+.switch { display: inline-flex; gap: 10px; align-items: center; cursor: pointer; font-weight: 550; user-select: none; }
+.switch .track {
+  width: 34px; height: 20px; border-radius: 10px; background: var(--axis);
+  position: relative; transition: background .15s; flex: none;
+}
+.switch .track::after {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+  border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.25);
+}
+#by-model:checked ~ main .switch .track { background: var(--accent); }
+#by-model:checked ~ main .switch .track::after { transform: translateX(14px); }
+#by-model:focus-visible ~ main .switch .track { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* KPI tiles */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.tile { padding: 14px 16px; }
+.tile .label { color: var(--text-2); font-size: 12.5px; }
+.tile .value { font-size: 24px; font-weight: 650; letter-spacing: -0.01em; margin-top: 2px; }
+.tile.hero .value { font-size: 30px; }
+.tile .note { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+/* share bar */
+.share { display: flex; gap: 2px; height: 12px; margin: 4px 0 10px; }
+.share i { display: block; height: 100%; background: var(--c, var(--bar)); min-width: 2px; }
+.share i:first-child { border-radius: 4px 0 0 4px; }
+.share i:last-child { border-radius: 0 4px 4px 0; }
+.share i:only-child { border-radius: 4px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0; padding: 0; list-style: none; color: var(--text-2); font-size: 12.5px; }
+.legend li { display: inline-flex; align-items: center; gap: 6px; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: var(--c, var(--bar)); flex: none; }
+
+/* chart */
+.chart { display: block; width: 100%; height: auto; overflow: visible; }
+.chart .grid { stroke: var(--grid); stroke-width: 1; }
+.chart .baseline { stroke: var(--axis); stroke-width: 1; }
+.chart text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.chart .seg { fill: var(--c); stroke: var(--surface); stroke-width: 1; }
+.chart .hit { fill: transparent; }
+.chart .col { outline: none; }
+.chart .col:hover .hit, .chart .col:focus-visible .hit, .chart .col.active .hit { fill: var(--hover); }
+.chart .col:focus-visible .hit { stroke: var(--accent); stroke-width: 1; }
+.chart .col:hover .seg, .chart .col.active .seg { filter: brightness(1.08); }
+.chart-wrap { position: relative; }
+
+/* chart tooltip (JS) */
+.tip {
+  position: absolute; z-index: 3; pointer-events: none;
+  min-width: 220px; max-width: min(360px, 100%);
+  padding: 10px 12px;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
+  font-size: 12.5px; line-height: 1.35;
+}
+.tip[hidden] { display: none; }
+.tip .t-head { display: flex; justify-content: space-between; gap: 16px; font-weight: 600; margin-bottom: 6px; }
+.tip .t-head .v { font-variant-numeric: tabular-nums; }
+.tip .t-head .wd { color: var(--muted); font-weight: 500; }
+.tip .t-rows { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto auto; gap: 3px 8px; align-items: center; }
+.tip .t-rows .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-2); }
+.tip .t-rows .v { text-align: right; font-variant-numeric: tabular-nums; }
+.tip .t-rows .p { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); min-width: 42px; }
+.tip .t-rows .sel { color: var(--text); font-weight: 650; }
+
+/* chart legend filter (JS) */
+.chart-legend li[role="button"] { cursor: pointer; padding: 2px 6px; margin: 0 -6px; border-radius: 6px; transition: opacity .15s; }
+.chart-legend li[role="button"]:hover { background: var(--hover); color: var(--text); }
+.chart-legend li[role="button"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
+.chart-legend.filtered li:not(.selected) { opacity: 0.4; }
+.chart-legend li.selected { color: var(--text); font-weight: 600; }
+.tip .t-foot { margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--grid); color: var(--muted); font-variant-numeric: tabular-nums; }
+.chart-legend { margin-top: 10px; }
+
+/* tables */
+.scroll { overflow-x: auto; margin: 0 -18px; padding: 0 18px; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 10px; text-align: left; white-space: nowrap; }
+thead th { color: var(--text-2); font-weight: 550; font-size: 12.5px; border-bottom: 1px solid var(--axis); vertical-align: bottom; }
+tbody td, tbody th { border-bottom: 1px solid var(--grid); }
+tfoot td, tfoot th { border-top: 1px solid var(--axis); font-weight: 600; }
+tbody th { font-weight: 550; }
+.num { text-align: right; }
+tr:hover > td, tr:hover > th { background: var(--hover); }
+.name { display: flex; align-items: center; gap: 8px; }
+td.l1 { padding-left: 26px; }
+td.l2 { padding-left: 44px; }
+tr.sub td { color: var(--text-2); }
+tr.sub td.name { color: var(--text); }
+table.grouped tbody { border-top: 1px solid var(--axis); }
+table.grouped tbody tr:last-child > * { border-bottom: 0; }
+.barcell { width: 130px; padding-left: 4px; padding-right: 4px; }
+.bar { display: block; width: 120px; height: 6px; border-radius: 3px; background: var(--track); }
+.bar i { display: block; height: 100%; border-radius: 3px; background: var(--c, var(--bar)); }
+th .sort { all: unset; cursor: pointer; display: inline-flex; gap: 4px; align-items: center; }
+th .sort:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+th .sort::after { content: "↕"; color: var(--axis); font-size: 11px; }
+th[aria-sort="ascending"] .sort::after { content: "↑"; color: var(--text-2); }
+th[aria-sort="descending"] .sort::after { content: "↓"; color: var(--text-2); }
+
+/* heatmap */
+.heat { width: auto; }
+.heat th, .heat td { padding: 0; }
+.heat tbody th { padding: 0 12px 0 0; font-weight: 450; }
+.heat tbody th .name { min-height: 22px; }
+.heat td.cell { width: 20px; min-width: 20px; height: 22px; border: 2px solid var(--surface); border-radius: 4px; background: var(--track); }
+.heat td.h1 { background: var(--h1); } .heat td.h2 { background: var(--h2); } .heat td.h3 { background: var(--h3); }
+.heat td.h4 { background: var(--h4); } .heat td.h5 { background: var(--h5); } .heat td.h6 { background: var(--h6); }
+.heat thead th.day { font-size: 10.5px; color: var(--muted); font-weight: 400; writing-mode: vertical-rl; transform: rotate(180deg); padding: 4px 0; height: 44px; text-align: left; border-bottom: 0; }
+.heat td.num, .heat thead th.num { padding-left: 12px; }
+.heat tbody td, .heat tbody th { border-bottom: 0; }
+.heat tr:hover > td.cell { background-clip: padding-box; outline: 1px solid var(--axis); }
+.heat-legend { display: flex; align-items: center; gap: 3px; color: var(--muted); font-size: 12px; }
+.heat-legend i { display: inline-block; width: 14px; height: 10px; border-radius: 2px; }
+
+footer { margin-top: 28px; color: var(--muted); font-size: 12.5px; }
+footer ul { margin: 6px 0 0; padding-left: 18px; }
+@media (max-width: 640px) {
+  .tile .value { font-size: 20px; }
+  .tile.hero .value { font-size: 24px; }
+  .controls nav { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+<input type="checkbox" id="by-model" class="toggle">
+<main>
+
+{{define "cells"}}
+<td class="num" data-v="{{raw .Cost}}">{{cost .Cost}}</td>
+<td class="barcell" aria-hidden="true"><span class="bar"><i class="{{.Color}}" style="{{width .Bar}}"></i></span></td>
+<td class="num" data-v="{{raw .Share}}">{{pct .Share}}</td>
+<td class="num" data-v="{{if .HasRequests}}{{.Requests}}{{else}}-1{{end}}">{{if .HasRequests}}{{int .Requests}}{{else}}<span class="muted">—</span>{{end}}</td>
+<td class="num" data-v="{{.InputTokens}}">{{int .InputTokens}}</td>
+<td class="num" data-v="{{.OutputTokens}}">{{int .OutputTokens}}</td>
+<td class="num" data-v="{{raw .CostPerMTokens}}">{{if .CostPerMTokens}}{{cost .CostPerMTokens}}{{else}}<span class="muted">—</span>{{end}}</td>
+{{end}}
+
+{{define "head"}}
+<th class="num" data-sort="num">Cost</th>
+<th><span class="muted" aria-hidden="true"></span></th>
+<th class="num" data-sort="num">Share</th>
+<th class="num" data-sort="num">Requests</th>
+<th class="num" data-sort="num">Input tokens</th>
+<th class="num" data-sort="num">Output tokens</th>
+<th class="num" data-sort="num" title="Average cost of 1M tokens (input + output)">Cost / 1M tok</th>
+{{end}}
+
+<header>
+  <h1>AI expenses</h1>
+  <p class="sub-title">{{.StartDate}} – {{.EndDate}} · {{.Days}} days (UTC) · {{range $i, $p := .Providers}}{{if $i}}, {{end}}{{$p.Name}}{{end}} · generated {{.Generated}}</p>
+</header>
+
+<div class="controls">
+  <label class="switch" for="by-model"><span class="track"></span>Break out by model</label>
+  <nav aria-label="Sections">
+    <a href="#overview">Overview</a>
+    <a href="#daily-chart">Daily chart</a>
+    <a href="#breakdown">Breakdown</a>
+    <a href="#days">Days</a>
+    <a href="#heatmap">Heatmap</a>
+  </nav>
+</div>
+
+<section id="overview">
+  <div class="tiles">
+    <div class="card tile hero">
+      <div class="label">Total cost</div>
+      <div class="value">{{cost .Total.Cost}}</div>
+      <div class="note">{{.Days}} days</div>
+    </div>
+    <div class="card tile">
+      <div class="label">Average per day</div>
+      <div class="value">{{cost .AvgPerDay}}</div>
+      <div class="note">over all days of the period</div>
+    </div>
+    <div class="card tile">
+      <div class="label">Most expensive day</div>
+      <div class="value">{{if .PeakDay.Name}}{{cost .PeakDay.Cost}}{{else}}—{{end}}</div>
+      <div class="note">{{if .PeakDay.Name}}{{.PeakDay.Name}} · {{pct .PeakDay.Share}} of total{{else}}no costs{{end}}</div>
+    </div>
+    <div class="card tile">
+      <div class="label">Requests</div>
+      <div class="value">{{if .Total.HasRequests}}{{int .Total.Requests}}{{else}}—{{end}}</div>
+      <div class="note">{{$noReq := false}}{{range .Providers}}{{if not .HasRequests}}{{$noReq = true}}{{end}}{{end}}{{if $noReq}}not available for{{range .Providers}}{{if not .HasRequests}} {{.Name}}{{end}}{{end}}{{else}}model requests{{end}}</div>
+    </div>
+    <div class="card tile">
+      <div class="label">Input tokens</div>
+      <div class="value">{{int .Total.InputTokens}}</div>
+      <div class="note">including cached</div>
+    </div>
+    <div class="card tile">
+      <div class="label">Output tokens</div>
+      <div class="value">{{int .Total.OutputTokens}}</div>
+      <div class="note">including thinking</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 12px">
+    <div class="card-head"><h2><span class="m-off">Cost share by provider</span><span class="m-on">Cost share by model</span></h2></div>
+    <div class="share m-off" role="img" aria-label="Cost share by provider">{{range .Providers}}{{if .Cost}}<i class="{{.Color}}" style="{{width .Share}}" title="{{.Name}}: {{cost .Cost}} ({{pct .Share}})"></i>{{end}}{{end}}</div>
+    <ul class="legend m-off">{{range .Providers}}<li><span class="swatch {{.Color}}"></span>{{.Name}} <b>{{pct .Share}}</b></li>{{end}}</ul>
+    <div class="share m-on" role="img" aria-label="Cost share by model">{{range .Models}}{{if .Cost}}<i class="{{.Color}}" style="{{width .Share}}" title="{{.Name}} ({{.Provider}}): {{cost .Cost}} ({{pct .Share}})"></i>{{end}}{{end}}</div>
+    <ul class="legend m-on">{{range .Models}}{{if ne .Color "s-other"}}<li><span class="swatch {{.Color}}"></span>{{.Name}} <b>{{pct .Share}}</b></li>{{end}}{{end}}{{$other := 0.0}}{{range .Models}}{{if eq .Color "s-other"}}{{$other = add $other .Share}}{{end}}{{end}}{{if $other}}<li><span class="swatch s-other"></span>Other <b>{{pct $other}}</b></li>{{end}}</ul>
+  </div>
+</section>
+
+<section id="daily-chart">
+  <div class="card">
+    <div class="card-head">
+      <h2>Daily cost <span class="muted m-off">by provider</span><span class="muted m-on">by model</span></h2>
+      <span class="muted" id="legend-hint" hidden>click a legend item to show only it</span>
+    </div>
+    {{with .Chart}}
+    <div class="chart-wrap">
+    <svg class="chart" viewBox="0 0 {{num .Width}} {{num .Height}}" role="img" aria-label="Daily cost, stacked columns"
+      data-base="{{num (sub .Height .Bottom)}}" data-plot-h="{{num (sub (sub .Height .Top) .Bottom)}}">
+      {{range .YTicks}}
+      <line class="grid" x1="{{num $.Chart.Left}}" x2="{{num (sub $.Chart.Width $.Chart.Right)}}" y1="{{num .Pos}}" y2="{{num .Pos}}"></line>
+      <text class="ytick" x="{{num (sub $.Chart.Left 8)}}" y="{{num .Pos}}" dy="0.32em" text-anchor="end">{{.Label}}</text>
+      {{end}}
+      {{range $i, $col := .Columns}}
+      <g class="col" data-i="{{$i}}" tabindex="0" aria-label="{{.Title}}">
+        <rect class="hit" x="{{num .HitX}}" y="{{num $.Chart.Top}}" width="{{num .HitW}}" height="{{num (sub (sub $.Chart.Height $.Chart.Top) $.Chart.Bottom)}}"><title>{{.Title}}</title></rect>
+        <g class="m-off">{{range .ByProvider}}<rect class="seg {{.Color}}" data-k="{{.Key}}" data-v="{{raw .Cost}}" x="{{num $col.X}}" y="{{num .Y}}" width="{{num $col.W}}" height="{{num .H}}"><title>{{.Title}}</title></rect>{{end}}</g>
+        <g class="m-on">{{range .ByModel}}<rect class="seg {{.Color}}" data-k="{{.Key}}" data-v="{{raw .Cost}}" x="{{num $col.X}}" y="{{num .Y}}" width="{{num $col.W}}" height="{{num .H}}"><title>{{.Title}}</title></rect>{{end}}</g>
+      </g>
+      {{end}}
+      <line class="baseline" x1="{{num .Left}}" x2="{{num (sub .Width .Right)}}" y1="{{num (sub .Height .Bottom)}}" y2="{{num (sub .Height .Bottom)}}"></line>
+      {{range .XLabels}}<text x="{{num .Pos}}" y="{{num (sub $.Chart.Height 12)}}" text-anchor="middle">{{.Label}}</text>{{end}}
+    </svg>
+    <div class="tip" id="chart-tip" role="tooltip" hidden></div>
+    </div>
+    <script type="application/json" id="chart-data">{{.Tips}}</script>
+    <ul class="legend chart-legend m-off" data-mode="provider">{{range .ProviderLegend}}<li data-k="{{.Key}}"><span class="swatch {{.Color}}"></span>{{.Name}}</li>{{end}}</ul>
+    <ul class="legend chart-legend m-on" data-mode="model">{{range .ModelLegend}}<li data-k="{{.Key}}"><span class="swatch {{.Color}}"></span>{{.Name}}</li>{{end}}</ul>
+    {{end}}
+  </div>
+</section>
+
+<section id="breakdown">
+  <div class="card m-off">
+    <div class="card-head"><h2>By provider</h2></div>
+    <div class="scroll">
+    <table class="sortable">
+      <thead><tr><th data-sort="text">Provider</th>{{template "head"}}</tr></thead>
+      <tbody>
+      {{range .Providers}}<tr><td data-v="{{.Name}}"><span class="name"><span class="swatch {{.Color}}"></span>{{.Name}}</span></td>{{template "cells" .}}</tr>
+      {{end}}
+      </tbody>
+      {{if .MultiProvider}}<tfoot><tr><th>Total</th>{{template "cells" .Total}}</tr></tfoot>{{end}}
+    </table>
+    </div>
+  </div>
+
+  <div class="card m-on">
+    <div class="card-head"><h2>By model</h2></div>
+    <div class="scroll">
+    <table class="sortable">
+      <thead><tr><th data-sort="text">Model</th><th data-sort="text">Provider</th>{{template "head"}}</tr></thead>
+      <tbody>
+      {{range .Models}}<tr><td data-v="{{.Name}}"><span class="name"><span class="swatch {{.Color}}"></span>{{.Name}}</span></td><td>{{.Provider}}</td>{{template "cells" .}}</tr>
+      {{end}}
+      </tbody>
+      <tfoot><tr><th>Total</th><td></td>{{template "cells" .Total}}</tr></tfoot>
+    </table>
+    </div>
+  </div>
+</section>
+
+<section id="days">
+  <div class="card">
+    <div class="card-head">
+      <h2>Days</h2>
+      <span class="muted">{{if .MultiProvider}}each day is broken out by provider<span class="m-on"> and model</span>{{else}}<span class="m-off">daily totals</span><span class="m-on">each day is broken out by model</span>{{end}}, bars are scaled to the most expensive day</span>
+    </div>
+    <div class="scroll">
+    <table class="sortable grouped">
+      <thead><tr><th data-sort="text" aria-sort="ascending">Date</th>{{template "head"}}</tr></thead>
+      {{range .DayRows}}
+      <tbody>
+        <tr class="day"><th scope="row" data-v="{{.Name}}">{{.Name}}</th>{{template "cells" .}}</tr>
+        {{range .Providers}}
+          {{if $.MultiProvider}}<tr class="sub"><td class="l1"><span class="name"><span class="swatch {{.Color}}"></span>{{.Name}}</span></td>{{template "cells" .}}</tr>{{end}}
+          {{range .Models}}<tr class="sub m-on"><td class="{{if $.MultiProvider}}l2{{else}}l1{{end}}"><span class="name"><span class="swatch {{.Color}}"></span>{{.Name}}</span></td>{{template "cells" .}}</tr>{{end}}
+        {{end}}
+      </tbody>
+      {{end}}
+      <tfoot><tr><th>Total</th>{{template "cells" .Total}}</tr></tfoot>
+    </table>
+    </div>
+  </div>
+</section>
+
+<section id="heatmap">
+  <div class="card">
+    <div class="card-head">
+      <h2>Cost by day <span class="muted m-off">and provider</span><span class="muted m-on">and model</span></h2>
+      <span class="heat-legend" aria-hidden="true">less <i style="background: var(--track)"></i><i style="background: var(--h1)"></i><i style="background: var(--h2)"></i><i style="background: var(--h3)"></i><i style="background: var(--h4)"></i><i style="background: var(--h5)"></i><i style="background: var(--h6)"></i> more</span>
+    </div>
+    {{define "heatrows"}}
+      <thead><tr><th></th>{{range .Dates}}<th class="day" scope="col">{{slice . 5}}</th>{{end}}<th class="num" scope="col">Total</th></tr></thead>
+    {{end}}
+    <div class="scroll m-off">
+    <table class="heat">
+      {{template "heatrows" .}}
+      <tbody>
+      {{range .HeatProviders}}<tr><th scope="row"><span class="name"><span class="swatch {{.Color}}"></span>{{.Name}}</span></th>{{range .Cells}}<td class="cell h{{.Level}}" title="{{.Date}}: {{cost .Cost}}"></td>{{end}}<td class="num">{{cost .Cost}}</td></tr>
+      {{end}}
+      </tbody>
+    </table>
+    </div>
+    <div class="scroll m-on">
+    <table class="heat">
+      {{template "heatrows" .}}
+      <tbody>
+      {{range .HeatModels}}<tr><th scope="row"><span class="name"><span class="swatch {{.Color}}"></span>{{.Name}}{{if $.MultiProvider}} <span class="muted">{{.Provider}}</span>{{end}}</span></th>{{range .Cells}}<td class="cell h{{.Level}}" title="{{.Date}}: {{cost .Cost}}"></td>{{end}}<td class="num">{{cost .Cost}}</td></tr>
+      {{end}}
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Notes:
+  <ul>
+    <li>Days are in UTC. Cost is in the billing currency of the provider account (USD for OpenAI), the last 1–2 days can still change.</li>
+    <li>OpenAI: cost from Costs API by line item, requests and tokens from Usage API by model.</li>
+    <li>Gemini: net cost (after credits) and tokens from Cloud Billing export to BigQuery, model is taken from the SKU description. Billing export has no request counts.</li>
+    <li>Click a column header to sort a table (needs JavaScript), everything else works without it.</li>
+  </ul>
+</footer>
+
+</main>
+<script>
+(() => {
+  const key = "ai-expenses-by-model";
+  const byModel = document.getElementById("by-model");
+  try { if (localStorage.getItem(key) === "1") byModel.checked = true; } catch (e) {}
+  byModel.addEventListener("change", () => {
+    try { localStorage.setItem(key, byModel.checked ? "1" : "0"); } catch (e) {}
+  });
+
+  // chart tooltip: all providers or models of the hovered day, native <title> tooltips are used without JS
+  const chart = document.querySelector("svg.chart");
+  const tip = document.getElementById("chart-tip");
+  const dataEl = document.getElementById("chart-data");
+  if (chart && tip && dataEl) {
+    let days = [];
+    try { days = JSON.parse(dataEl.textContent) || []; } catch (e) {}
+    chart.querySelectorAll("title").forEach((t) => t.remove());
+
+    const wrap = chart.parentElement;
+    const fmtInt = (n) => n.toLocaleString("en-US");
+    const el = (tag, cls, text) => {
+      const e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+
+    // legend filter: click shows only this provider/model with rescaled y axis, second click shows all,
+    // selection is separate for providers and models
+    const mode = () => (byModel.checked ? "model" : "provider");
+    const selected = { provider: null, model: null };
+    const base = Number(chart.dataset.base), plotH = Number(chart.dataset.plotH);
+    const yTicks = [...chart.querySelectorAll("text.ytick")];
+    const yTickLabels = yTicks.map((t) => t.textContent);
+    const segs = [...chart.querySelectorAll("rect.seg")];
+    segs.forEach((s) => { s.dataset.y0 = s.getAttribute("y"); s.dataset.h0 = s.getAttribute("height"); });
+    const legends = [...document.querySelectorAll(".chart-legend[data-mode]")];
+
+    const niceCeil = (v) => {
+      if (v <= 0) return 1;
+      const exp = Math.pow(10, Math.floor(Math.log10(v)));
+      for (const nice of [1, 2, 2.5, 5, 10]) if (v <= nice * exp * (1 + 1e-9)) return nice * exp;
+      return 10 * exp;
+    };
+
+    const applyFilter = () => {
+      const key = selected[mode()];
+      segs.forEach((s) => {
+        s.style.display = "";
+        s.setAttribute("y", s.dataset.y0);
+        s.setAttribute("height", s.dataset.h0);
+      });
+
+      if (!key) {
+        yTicks.forEach((t, i) => { t.textContent = yTickLabels[i]; });
+      } else {
+        const modeSegs = [...chart.querySelectorAll((mode() === "model" ? "g.m-on" : "g.m-off") + " rect.seg")];
+        const maxCost = Math.max(0, ...modeSegs.filter((s) => s.dataset.k === key).map((s) => Number(s.dataset.v)));
+        const yMax = niceCeil(maxCost);
+        modeSegs.forEach((s) => {
+          if (s.dataset.k !== key) { s.style.display = "none"; return; }
+          const h = Number(s.dataset.v) / yMax * plotH;
+          s.setAttribute("y", base - h);
+          s.setAttribute("height", h);
+        });
+        yTicks.forEach((t, i) => { t.textContent = String(parseFloat((yMax * i / (yTicks.length - 1)).toPrecision(10))); });
+      }
+
+      for (const ul of legends) {
+        const current = selected[ul.dataset.mode];
+        ul.classList.toggle("filtered", current !== null);
+        ul.querySelectorAll("li[data-k]").forEach((li) => {
+          li.classList.toggle("selected", li.dataset.k === current);
+          li.setAttribute("aria-pressed", String(li.dataset.k === current));
+        });
+      }
+    };
+
+    for (const ul of legends) {
+      ul.querySelectorAll("li[data-k]").forEach((li) => {
+        li.setAttribute("role", "button");
+        li.tabIndex = 0;
+        li.setAttribute("aria-pressed", "false");
+        const toggle = () => {
+          const m = ul.dataset.mode;
+          selected[m] = selected[m] === li.dataset.k ? null : li.dataset.k;
+          applyFilter();
+        };
+        li.addEventListener("click", toggle);
+        li.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+        });
+      });
+    }
+    byModel.addEventListener("change", applyFilter);
+    const hint = document.getElementById("legend-hint");
+    if (hint) hint.hidden = false;
+
+    const render = (day) => {
+      const items = byModel.checked ? day.models : day.providers;
+      const sel = selected[mode()];
+      const head = el("div", "t-head");
+      const date = el("span", "", day.date);
+      if (day.weekday) date.append(" ", el("span", "wd", day.weekday));
+      head.append(date, el("span", "v", day.cost.toFixed(4)));
+      const rows = el("div", "t-rows");
+      if (!items.length) rows.append(el("span"), el("span", "n", "no costs"), el("span"), el("span"));
+      for (const item of items) {
+        const s = item.key === sel ? " sel" : "";
+        rows.append(
+          el("span", "swatch " + item.color),
+          el("span", "n" + s, item.name),
+          el("span", "v" + s, item.cost.toFixed(4)),
+          el("span", "p" + s, day.cost > 0 ? (item.cost / day.cost * 100).toFixed(1) + "%" : ""),
+        );
+      }
+      const foot = el("div", "t-foot",
+        (day.hasRequests ? fmtInt(day.requests) + " requests · " : "") +
+        fmtInt(day.inputTokens) + " in · " + fmtInt(day.outputTokens) + " out tokens");
+      tip.replaceChildren(head, rows, foot);
+    };
+
+    let active = null;
+    const show = (col, clientX, clientY) => {
+      const day = days[Number(col.dataset.i)];
+      if (!day) return;
+      if (active !== col) {
+        active?.classList.remove("active");
+        col.classList.add("active");
+        active = col;
+        render(day);
+      }
+      tip.hidden = false;
+
+      const box = wrap.getBoundingClientRect();
+      if (clientX === undefined) { // keyboard focus: next to the column
+        const r = col.getBoundingClientRect();
+        clientX = r.right;
+        clientY = r.top + r.height / 3;
+      }
+      const gap = 14;
+      let x = clientX - box.left + gap;
+      if (x + tip.offsetWidth > box.width) x = clientX - box.left - gap - tip.offsetWidth;
+      let y = clientY - box.top + gap;
+      if (y + tip.offsetHeight > box.height) y = box.height - tip.offsetHeight;
+      tip.style.left = Math.max(0, x) + "px";
+      tip.style.top = Math.max(0, y) + "px";
+    };
+    const hide = () => {
+      tip.hidden = true;
+      active?.classList.remove("active");
+      active = null;
+    };
+
+    chart.addEventListener("pointermove", (e) => {
+      const col = e.target.closest?.(".col");
+      col ? show(col, e.clientX, e.clientY) : hide();
+    });
+    chart.addEventListener("pointerleave", hide);
+    chart.querySelectorAll(".col").forEach((col) => {
+      col.addEventListener("focus", () => show(col));
+      col.addEventListener("blur", hide);
+    });
+    byModel.addEventListener("change", () => {
+      if (active) { const col = active; active = null; show(col); }
+    });
+  }
+
+  const value = (row, i) => {
+    const cell = row.cells[i];
+    return cell ? (cell.dataset.v ?? cell.textContent.trim()) : "";
+  };
+
+  document.querySelectorAll("table.sortable").forEach((table) => {
+    const headers = [...table.tHead.rows[0].cells];
+    headers.forEach((th, i) => {
+      const type = th.dataset.sort;
+      if (!type) return;
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "sort";
+      button.append(...th.childNodes);
+      th.append(button);
+
+      button.addEventListener("click", () => {
+        const current = th.getAttribute("aria-sort");
+        const desc = current ? current === "ascending" : type === "num";
+        headers.forEach((h) => h.removeAttribute("aria-sort"));
+        th.setAttribute("aria-sort", desc ? "descending" : "ascending");
+
+        const compare = (a, b) => {
+          const x = value(a, i), y = value(b, i);
+          const result = type === "num" ? parseFloat(x) - parseFloat(y) : x.localeCompare(y);
+          return desc ? -result : result;
+        };
+
+        if (table.classList.contains("grouped")) {
+          const tfoot = table.tFoot;
+          [...table.tBodies].sort((a, b) => compare(a.rows[0], b.rows[0])).forEach((tbody) => table.insertBefore(tbody, tfoot));
+        } else {
+          const tbody = table.tBodies[0];
+          [...tbody.rows].sort(compare).forEach((row) => tbody.append(row));
+        }
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
