@@ -26,6 +26,18 @@ func TestFormatInt(t *testing.T) {
 	}
 }
 
+func TestPeriodLength(t *testing.T) {
+	tests := []struct {
+		group, period string
+		want          int
+	}{{"week", "2026-11-16", 7}, {"month", "2026-11", 30}, {"month", "2026-12", 31}, {"month", "2028-02", 29}}
+	for _, tt := range tests {
+		if got := periodLength(tt.group, tt.period); got != tt.want {
+			t.Errorf("periodLength(%q, %q) = %d, want %d", tt.group, tt.period, got, tt.want)
+		}
+	}
+}
+
 func TestBuildHTMLView(t *testing.T) {
 	gemini := newReport("gemini", time.Date(2026, 11, 20, 0, 0, 0, 0, time.UTC), 2)
 	gemini.HasTokens, gemini.HasRequests, gemini.NoModelRequests = true, true, true
@@ -72,6 +84,21 @@ func TestBuildHTMLView(t *testing.T) {
 	if key := view.Chart.ProviderLegend[1].Key; key != "Gemini" || view.Chart.Columns[1].ByProvider[1].Key != key {
 		t.Errorf("provider keys: legend %q, segment %q", key, view.Chart.Columns[1].ByProvider[1].Key)
 	}
+	// "Days" table by day, week and month: both days are in one partial week and month
+	if len(view.Periods) != 3 || view.Periods[0].Group != "day" || len(view.Periods[0].Rows) != 2 || view.Periods[0].Rows[0].Note != "" {
+		t.Fatalf("periods = %+v", view.Periods)
+	}
+	for i, want := range []struct{ group, name, note string }{{"week", "2026-11-16", "2 of 7 days"}, {"month", "2026-11", "2 of 30 days"}} {
+		p := view.Periods[i+1]
+		if p.Group != want.group || len(p.Rows) != 1 {
+			t.Fatalf("period %s = %+v", want.group, p)
+		}
+		row := p.Rows[0]
+		if row.Name != want.name || row.Note != want.note || row.Cost != 4.25 || row.Share != 100 || row.Bar != 100 ||
+			row.Providers[1].Requests != 4 || len(row.Providers[0].Models) != 2 || row.Providers[0].Models[0].Color != "s1" {
+			t.Errorf("period %s row = %+v", want.group, row)
+		}
+	}
 	if len(view.Chart.Tips) != 2 {
 		t.Fatalf("chart tips = %+v", view.Chart.Tips)
 	}
@@ -95,7 +122,8 @@ func TestWriteHTMLReport(t *testing.T) {
 	}
 
 	html := buf.String()
-	for _, want := range []string{"model-a", "OpenAI", "Gemini", "gemini-&lt;2.5&gt;-flash", `id="by-model"`, "4.2500", "1,120"} {
+	for _, want := range []string{"model-a", "OpenAI", "Gemini", "gemini-&lt;2.5&gt;-flash", `id="by-model"`, "4.2500", "1,120",
+		`id="group-week"`, `class="scroll g-month"`, "2026-11-16", "2 of 30 days"} {
 		if !strings.Contains(html, want) {
 			t.Errorf("HTML report doesn't contain %q", want)
 		}

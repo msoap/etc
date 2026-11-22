@@ -118,6 +118,22 @@ section { margin-top: 20px; }
 #by-model:checked ~ main .switch .track::after { transform: translateX(14px); }
 #by-model:focus-visible ~ main .switch .track { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+/* group switch of "Days" table (day, week, month), works without JS like the models switch */
+#group-day:not(:checked) ~ main .g-day,
+#group-week:not(:checked) ~ main .g-week,
+#group-month:not(:checked) ~ main .g-month { display: none; }
+.head-left { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.segmented { display: inline-flex; padding: 2px; border-radius: 8px; background: var(--track); font-size: 12.5px; }
+.segmented label { padding: 2px 10px; border-radius: 6px; cursor: pointer; color: var(--text-2); user-select: none; }
+.segmented label:hover { color: var(--text); }
+#group-day:checked ~ main label[for="group-day"],
+#group-week:checked ~ main label[for="group-week"],
+#group-month:checked ~ main label[for="group-month"] { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+#group-day:focus-visible ~ main label[for="group-day"],
+#group-week:focus-visible ~ main label[for="group-week"],
+#group-month:focus-visible ~ main label[for="group-month"] { outline: 2px solid var(--accent); outline-offset: 1px; }
+th .note { font-weight: 400; font-size: 12px; margin-left: 4px; }
+
 /* KPI tiles */
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
 .tile { padding: 14px 16px; }
@@ -230,6 +246,9 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 </head>
 <body>
 <input type="checkbox" id="by-model" class="toggle">
+<input type="radio" name="group" id="group-day" value="day" class="toggle" checked>
+<input type="radio" name="group" id="group-week" value="week" class="toggle">
+<input type="radio" name="group" id="group-month" value="month" class="toggle">
 <main>
 
 {{define "cells"}}
@@ -377,24 +396,29 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 <section id="days">
   <div class="card">
     <div class="card-head">
-      <h2>Days</h2>
-      <span class="muted">{{if .MultiProvider}}each day is broken out by provider<span class="m-on"> and model</span>{{else}}<span class="m-off">daily totals</span><span class="m-on">each day is broken out by model</span>{{end}}, bars are scaled to the most expensive day</span>
+      <div class="head-left">
+        <h2><span class="g-day">Days</span><span class="g-week">Weeks</span><span class="g-month">Months</span></h2>
+        <div class="segmented" role="group" aria-label="Group by"><label for="group-day">Day</label><label for="group-week">Week</label><label for="group-month">Month</label></div>
+      </div>
+      <span class="muted"><span class="g-week">weeks are Mo–Su, shown by the date of Monday, </span>{{if .MultiProvider}}each row is broken out by provider<span class="m-on"> and model</span>{{else}}<span class="m-off">totals</span><span class="m-on">each row is broken out by model</span>{{end}}, bars are scaled to the most expensive <span class="g-day">day</span><span class="g-week">week</span><span class="g-month">month</span></span>
     </div>
-    <div class="scroll">
+    {{range .Periods}}
+    <div class="scroll g-{{.Group}}">
     <table class="sortable grouped">
-      <thead><tr><th data-sort="text" aria-sort="ascending">Date</th>{{template "head"}}</tr></thead>
-      {{range .DayRows}}
+      <thead><tr><th data-sort="text" aria-sort="ascending">{{if eq .Group "week"}}Week{{else if eq .Group "month"}}Month{{else}}Date{{end}}</th>{{template "head"}}</tr></thead>
+      {{range .Rows}}
       <tbody>
-        <tr class="day"><th scope="row" data-v="{{.Name}}">{{.Name}}</th>{{template "cells" .}}</tr>
+        <tr class="day"><th scope="row" data-v="{{.Name}}">{{.Name}}{{with .Note}}<span class="muted note">{{.}}</span>{{end}}</th>{{template "cells" .}}</tr>
         {{range .Providers}}
           {{if $.MultiProvider}}<tr class="sub"><td class="l1"><span class="name"><span class="swatch {{.Color}}"></span>{{.Name}}</span></td>{{template "cells" .}}</tr>{{end}}
           {{range .Models}}<tr class="sub m-on"><td class="{{if $.MultiProvider}}l2{{else}}l1{{end}}"><span class="name"><span class="swatch {{.Color}}"></span>{{.Name}}</span></td>{{template "cells" .}}</tr>{{end}}
         {{end}}
       </tbody>
       {{end}}
-      <tfoot><tr><th>Total</th>{{template "cells" .Total}}</tr></tfoot>
+      <tfoot><tr><th>Total</th>{{template "cells" $.Total}}</tr></tfoot>
     </table>
     </div>
+    {{end}}
   </div>
 </section>
 
@@ -434,6 +458,7 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
     <li>Days are in UTC. Cost is in the billing currency of the provider account (USD for OpenAI), the last 1–2 days can still change.</li>
     <li>OpenAI: cost from Costs API by line item, requests and tokens from Usage API by model.</li>
     <li>Gemini: net cost (after credits) and tokens from Cloud Billing export to BigQuery, model is taken from the SKU description. Requests per day (all response codes) from Cloud Monitoring metric <code>api/request_count</code>, it has no model label, so there are no requests by model. Monitoring keeps it for 6 weeks.</li>
+    <li>Weeks are calendar weeks (Mo–Su), months are calendar months, the first and the last of them can be partial (shown with number of days in the period).</li>
     <li>Click a column header to sort a table (needs JavaScript), everything else works without it.</li>
   </ul>
 </footer>
@@ -447,6 +472,17 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
   byModel.addEventListener("change", () => {
     try { localStorage.setItem(key, byModel.checked ? "1" : "0"); } catch (e) {}
   });
+
+  // group of "Days" table: day, week or month
+  const groupKey = "ai-expenses-group";
+  const groupInputs = [...document.querySelectorAll('input[name="group"]')];
+  try {
+    const saved = groupInputs.find((input) => input.value === localStorage.getItem(groupKey));
+    if (saved) saved.checked = true;
+  } catch (e) {}
+  groupInputs.forEach((input) => input.addEventListener("change", () => {
+    try { localStorage.setItem(groupKey, input.value); } catch (e) {}
+  }));
 
   // chart tooltip: all providers or models of the hovered day, native <title> tooltips are used without JS
   const chart = document.querySelector("svg.chart");

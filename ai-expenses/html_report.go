@@ -48,7 +48,14 @@ type htmlDayProvider struct {
 
 type htmlDay struct {
 	htmlRow
+	Note      string // for partial weeks and months: "3 of 7 days"
 	Providers []htmlDayProvider
+}
+
+// periodTable - table of costs by days, weeks or months
+type periodTable struct {
+	Group string // "day", "week" or "month"
+	Rows  []htmlDay
 }
 
 type heatCell struct {
@@ -140,6 +147,7 @@ type htmlView struct {
 	Providers                     []htmlRow
 	Models                        []htmlRow
 	DayRows                       []htmlDay
+	Periods                       []periodTable // tables by day, week and month for the "Days" section
 	Dates                         []string
 	HeatProviders, HeatModels     []heatRow
 	Chart                         chartView
@@ -248,8 +256,54 @@ func buildHTMLView(reports []*Report, now time.Time) htmlView {
 	}
 
 	// days
+	view.DayRows = buildPeriodRows(reports, view.Dates, view, modelColors)
 	maxDayCost := 0.0
-	for _, date := range view.Dates {
+	for _, day := range view.DayRows {
+		maxDayCost = max(maxDayCost, day.Cost)
+		if day.Cost > view.PeakDay.Cost {
+			view.PeakDay = day.htmlRow
+		}
+	}
+
+	// weeks and months for the "Days" section
+	view.Periods = []periodTable{{Group: "day", Rows: view.DayRows}}
+	for _, group := range []string{"week", "month"} {
+		grouped := make([]*Report, len(reports))
+		for i, r := range reports {
+			grouped[i] = r.groupBy(group)
+		}
+
+		daysInPeriod := map[string]int{}
+		for _, date := range view.Dates {
+			daysInPeriod[groupKeys[group](date)]++
+		}
+		periods := slices.Sorted(maps.Keys(daysInPeriod))
+
+		rows := buildPeriodRows(grouped, periods, view, modelColors)
+		for i := range rows {
+			if full := periodLength(group, rows[i].Name); daysInPeriod[rows[i].Name] < full {
+				rows[i].Note = fmt.Sprintf("%d of %d days", daysInPeriod[rows[i].Name], full)
+			}
+		}
+		view.Periods = append(view.Periods, periodTable{Group: group, Rows: rows})
+	}
+
+	if view.Days > 0 {
+		view.AvgPerDay = view.Total.Cost / float64(view.Days)
+	}
+
+	view.HeatProviders, view.HeatModels = buildHeatmaps(view)
+	view.Chart = buildChart(view, maxDayCost)
+
+	return view
+}
+
+// buildPeriodRows returns rows of reports for dates (days, Mondays of weeks or months, as keys of report Days),
+// each row is broken out by provider and model, bars are scaled to the most expensive row
+func buildPeriodRows(reports []*Report, dates []string, view htmlView, modelColors map[string]string) []htmlDay {
+	var rows []htmlDay
+	maxCost := 0.0
+	for _, date := range dates {
 		day := htmlDay{htmlRow: htmlRow{Name: date, HasRequests: view.Total.HasRequests}}
 		for i, r := range reports {
 			dayStats := r.Days[date]
@@ -276,33 +330,34 @@ func buildHTMLView(reports []*Report, now time.Time) htmlView {
 			}
 			day.Providers = append(day.Providers, provider)
 		}
-		maxDayCost = max(maxDayCost, day.Cost)
-		view.DayRows = append(view.DayRows, day)
+		maxCost = max(maxCost, day.Cost)
+		rows = append(rows, day)
 	}
 
-	for i := range view.DayRows {
-		day := &view.DayRows[i]
-		day.Share = pct(day.Cost, view.Total.Cost)
-		day.Bar = pct(day.Cost, maxDayCost)
-		if day.Cost > view.PeakDay.Cost {
-			view.PeakDay = day.htmlRow
-		}
+	for i := range rows {
+		day := &rows[i]
+		day.Share, day.Bar = pct(day.Cost, view.Total.Cost), pct(day.Cost, maxCost)
 		for j := range day.Providers {
 			p := &day.Providers[j]
-			p.Share, p.Bar = pct(p.Cost, view.Total.Cost), pct(p.Cost, maxDayCost)
+			p.Share, p.Bar = pct(p.Cost, view.Total.Cost), pct(p.Cost, maxCost)
 			for k := range p.Models {
-				p.Models[k].Share, p.Models[k].Bar = pct(p.Models[k].Cost, view.Total.Cost), pct(p.Models[k].Cost, maxDayCost)
+				p.Models[k].Share, p.Models[k].Bar = pct(p.Models[k].Cost, view.Total.Cost), pct(p.Models[k].Cost, maxCost)
 			}
 		}
 	}
-	if view.Days > 0 {
-		view.AvgPerDay = view.Total.Cost / float64(view.Days)
+	return rows
+}
+
+// periodLength returns number of days in the full week (7) or month of period key ("2026-11" → 30)
+func periodLength(group, period string) int {
+	if group != "month" {
+		return 7
 	}
-
-	view.HeatProviders, view.HeatModels = buildHeatmaps(view)
-	view.Chart = buildChart(view, maxDayCost)
-
-	return view
+	t, err := time.Parse("2006-01", period)
+	if err != nil {
+		return 0
+	}
+	return t.AddDate(0, 1, -1).Day()
 }
 
 // buildHeatmaps returns provider x day and model x day cost matrices

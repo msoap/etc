@@ -107,8 +107,9 @@ One self-contained HTML file (no external resources, template is embedded into t
   * tiles: total cost, average per day, the most expensive day, requests, input/output tokens
   * cost share bar, daily cost chart (stacked columns), tables by provider/model and by day, heatmap cost by day and provider/model
   * "Break out by model" switch - shows all charts and tables by providers or by models
+  * Day / Week / Month switch of the table by day - groups it by days, calendar weeks (Mo-Su, shown by the date of Monday) or calendar months, partial first and last weeks/months are marked with number of days (e.g. `3 of 7 days`)
 
-Charts, tables and the switch work without JavaScript (SVG + CSS), JavaScript only adds sorting tables by click on column header and remembers the switch state. Light and dark themes follow the system setting.
+Charts, tables and the switches work without JavaScript (SVG + CSS), JavaScript only adds sorting tables by click on column header and remembers the switches state. Light and dark themes follow the system setting.
 
 With `-provider openai,gemini` the providers are printed one after another, each under its own `openai:` / `gemini:` header. With `-col` they are printed side by side, one column per provider, works with `-total` and `-chart` (all bars are scaled to the most expensive day of all providers).
 
