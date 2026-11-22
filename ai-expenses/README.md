@@ -106,7 +106,7 @@ With `-verbose` each provider gets requests (`req`), input (`in`) and output (`o
 
     $ ai-expenses -provider openai,gemini -days 2 -total -verbose -col
     date          ┊ openai  req    in  out ┊ gemini   req   in  out
-    ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+    ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
     2026-11-20 Fr ┊ 1.7500   12  1050  105 ┊  0.0000    0    0    0
     2026-11-21 Sa ┊ 2.0000    3    70    7 ┊ 12.5000    4  500   50
     Total:        ┊ 3.7500   15  1120  112 ┊ 12.5000    4  500   50
