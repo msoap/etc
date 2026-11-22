@@ -66,17 +66,17 @@ With `-by-model` each day (and `Total:`) is followed by its models sorted by cos
       gpt-4o-mini-2024-07-18  2.2500         5           120             12
       gpt-4o-2024-08-06       1.5000        10          1000            100
 
-With `-chart` each line with cost ends with a bar up to 10 characters long, drawn with [tcg](https://github.com/msoap/tcg) in 2x3 mode (1px line in the middle of the character, so the resolution is half a character). Days and models of days are scaled to the most expensive day. The `Total:` line has no bar, its models are scaled to the total cost:
+With `-chart` each line with cost ends with a bar, drawn with [tcg](https://github.com/msoap/tcg) in 2x3 mode (1px line in the middle of the character, so the resolution is half a character). Days and models of days are scaled to the most expensive day. The `Total:` line has no bar, its models are scaled to the total cost:
 
     $ ai-expenses -by-model -days 2 -total -chart
-    2026-11-20 Fr             1.7500  🬋🬋🬋🬋🬋🬋🬋🬋🬋
-      gpt-4o-2024-08-06       1.5000  🬋🬋🬋🬋🬋🬋🬋🬃
-      gpt-4o-mini-2024-07-18  0.2500  🬋🬃
-    2026-11-21 Sa             2.0000  🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
-      gpt-4o-mini-2024-07-18  2.0000  🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
+    2026-11-20 Fr             1.7500  🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
+      gpt-4o-2024-08-06       1.5000  🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋🬃
+      gpt-4o-mini-2024-07-18  0.2500  🬋🬋
+    2026-11-21 Sa             2.0000  🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
+      gpt-4o-mini-2024-07-18  2.0000  🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋🬋
     Total:                    3.7500
-      gpt-4o-mini-2024-07-18  2.2500  🬋🬋🬋🬋🬋🬋
-      gpt-4o-2024-08-06       1.5000  🬋🬋🬋🬋
+      gpt-4o-mini-2024-07-18  2.2500  🬋🬋🬋🬋🬋🬋🬋🬋🬋
+      gpt-4o-2024-08-06       1.5000  🬋🬋🬋🬋🬋🬋
 
 2x3 symbols are from Unicode "Symbols for Legacy Computing" block, they are supported by Iosevka font and some terminals.
 

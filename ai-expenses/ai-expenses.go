@@ -26,7 +26,7 @@ import (
 )
 
 // chartWidth - maximum width of cost bar in terminal characters
-const chartWidth = 10
+const chartWidth = 15
 
 type CostAmount struct {
 	Value    probablyFloat `json:"value"`
