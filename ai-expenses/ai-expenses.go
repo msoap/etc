@@ -110,6 +110,17 @@ func (d *DayStats) add(model string, s Stats) {
 	d.Models[model].add(s)
 }
 
+// merge adds stats of other day with its models
+func (d *DayStats) merge(other *DayStats) {
+	d.Stats.add(other.Stats)
+	for model, s := range other.Models {
+		if d.Models[model] == nil {
+			d.Models[model] = &Stats{}
+		}
+		d.Models[model].add(*s)
+	}
+}
+
 type Report struct {
 	Provider    string
 	Days        map[string]*DayStats
@@ -117,6 +128,8 @@ type Report struct {
 	HasTokens   bool
 	// NoModelRequests - requests are counted only per day, not per model (Gemini)
 	NoModelRequests bool
+	// Group - how Days are grouped: "day" (or empty), "week" (keys are dates of Mondays), "month" (keys are "YYYY-MM")
+	Group string
 }
 
 func newReport(provider string, startDate time.Time, days int) *Report {
@@ -143,15 +156,58 @@ func (r *Report) add(date, model string, s Stats) {
 func (r *Report) total() *DayStats {
 	result := &DayStats{Models: map[string]*Stats{}}
 	for _, day := range r.Days {
-		result.Stats.add(day.Stats)
-		for model, s := range day.Models {
-			if result.Models[model] == nil {
-				result.Models[model] = &Stats{}
-			}
-			result.Models[model].add(*s)
-		}
+		result.merge(day)
 	}
 	return result
+}
+
+// weekStart returns Monday of the calendar week of date: "2026-11-22" (Su) → "2026-11-16"
+func weekStart(date string) string {
+	t, err := time.Parse(time.DateOnly, date)
+	if err != nil {
+		return date
+	}
+	return t.AddDate(0, 0, -(int(t.Weekday())+6)%7).Format(time.DateOnly)
+}
+
+// monthOf returns calendar month of date: "2026-11-22" → "2026-11"
+func monthOf(date string) string {
+	t, err := time.Parse(time.DateOnly, date)
+	if err != nil {
+		return date
+	}
+	return t.Format("2006-01")
+}
+
+// groupKeys - functions for grouping days by "week" or "month"
+var groupKeys = map[string]func(date string) string{
+	"week":  weekStart,
+	"month": monthOf,
+}
+
+// groupBy returns new report with days grouped by calendar weeks (Mo-Su) or months,
+// first and last groups can be partial, for "day" returns the report as is
+func (r *Report) groupBy(group string) *Report {
+	key, ok := groupKeys[group]
+	if !ok {
+		return r
+	}
+
+	result := *r
+	result.Days = map[string]*DayStats{}
+	result.Group = group
+	for date, day := range r.Days {
+		result.day(key(date)).merge(day)
+	}
+	return &result
+}
+
+// dateLabel returns date for output: with weekday for days, as is for weeks (date of Monday) and months ("YYYY-MM")
+func (r *Report) dateLabel(date string) string {
+	if _, ok := groupKeys[r.Group]; ok {
+		return date
+	}
+	return dateWithWeekday(date)
 }
 
 type probablyFloat float64 // can be float or float inside string
@@ -540,7 +596,7 @@ func printReport(w io.Writer, r *Report, byModel, verbose, showTotal, chart bool
 		}
 
 		for _, date := range dates {
-			fmt.Fprintln(w, strings.TrimRight(fmt.Sprintf("%s %*.4f %s", dateWithWeekday(date), costWidth, r.Days[date].Cost, bar(r.Days[date].Cost, maxDayCost)), " "))
+			fmt.Fprintln(w, strings.TrimRight(fmt.Sprintf("%s %*.4f %s", r.dateLabel(date), costWidth, r.Days[date].Cost, bar(r.Days[date].Cost, maxDayCost)), " "))
 		}
 		if showTotal {
 			fmt.Fprintf(w, "Total: %.4f\n", totalCost)
@@ -593,7 +649,7 @@ func printReport(w io.Writer, r *Report, byModel, verbose, showTotal, chart bool
 	}
 
 	for _, date := range dates {
-		addDay(dateWithWeekday(date), r.Days[date], maxDayCost, true)
+		addDay(r.dateLabel(date), r.Days[date], maxDayCost, true)
 	}
 	if showTotal {
 		// total line itself is without bar (it would be always full), its models are scaled to the total cost
@@ -670,7 +726,7 @@ func printColumns(w io.Writer, reports []*Report, verbose, showTotal, chart bool
 	// each group is lines of the same height: header, dates, total
 	dateRows := [][]string{{"date"}}
 	for _, date := range dates {
-		dateRows = append(dateRows, []string{dateWithWeekday(date)})
+		dateRows = append(dateRows, []string{reports[0].dateLabel(date)}) // all reports have the same grouping
 	}
 	if showTotal {
 		dateRows = append(dateRows, []string{"Total:"})
@@ -720,15 +776,19 @@ func main() {
 	byModel := flag.Bool("by-model", false, "Break out costs by model")
 	verbose := flag.Bool("verbose", false, "Show requests and tokens in addition to cost (when provider has them)")
 	chart := flag.Bool("chart", false, "Show cost as horizontal bar chart at the end of lines")
-	htmlReport := flag.String("html-report", "", "Save HTML report to file, it always contains break out by models, requests and tokens (can't be used with -by-model, -verbose, -total, -chart, -col)")
+	htmlReport := flag.String("html-report", "", "Save HTML report to file, it always contains break out by models, requests and tokens (can't be used with -by-model, -verbose, -total, -chart, -col, -group)")
 	columns := flag.Bool("col", false, "Show each provider in its own columns (can't be used with -by-model)")
+	group := flag.String("group", "day", "Group statistics by: day, week (calendar weeks Mo-Su, date is Monday of the week) or month (calendar months, YYYY-MM)")
 	flag.Parse()
 	log.SetFlags(log.LstdFlags | log.Lmsgprefix) // prefix with provider after the timestamp
 
+	if _, ok := groupKeys[*group]; !ok && *group != "day" {
+		log.Fatalf("Error: unknown -group %q, use day, week or month", *group)
+	}
 	if *htmlReport != "" {
 		flag.Visit(func(f *flag.Flag) {
 			switch f.Name {
-			case "by-model", "verbose", "total", "chart", "col":
+			case "by-model", "verbose", "total", "chart", "col", "group":
 				log.Fatalf("Error: -%s can't be used with -html-report, HTML report always contains all statistics", f.Name)
 			}
 		})
@@ -761,6 +821,8 @@ func main() {
 			log.Fatalf("Error: unknown provider %q, use openai, gemini or openai,gemini", provider)
 		}
 		log.SetPrefix("")
+
+		report = report.groupBy(*group)
 
 		if collect {
 			reports = append(reports, report)

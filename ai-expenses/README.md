@@ -30,8 +30,10 @@ Usage
         Show cost as horizontal bar chart at the end of lines
     -col
         Show each provider in its own columns (can't be used with -by-model)
+    -group string
+        Group statistics by: day, week (calendar weeks Mo-Su, date is Monday of the week) or month (calendar months, YYYY-MM) (default "day")
     -html-report string
-        Save HTML report to file, it always contains break out by models, requests and tokens (can't be used with -by-model, -verbose, -total, -chart, -col)
+        Save HTML report to file, it always contains break out by models, requests and tokens (can't be used with -by-model, -verbose, -total, -chart, -col, -group)
     -key string
         OpenAI API key (or set OPENAI_ADMIN_KEY env var)
     -gcp-project string
@@ -52,6 +54,21 @@ Examples:
     $ ai-expenses -provider gemini -gcp-project my-gemini-project -days 30 -total
 
 Output is one line per day (UTC): `YYYY-MM-DD Wd cost`, where `Wd` is two-letter weekday (`Mo`, `Tu`, `We`, `Th`, `Fr`, `Sa`, `Su`). Days without usage are shown as `0.0000`.
+
+With `-group week` days are summed by calendar weeks (Monday - Sunday), each line is `YYYY-MM-DD cost`, where the date is Monday of the week (without weekday). The first and the last weeks can be partial, e.g. `-days 30` starts in the middle of a week. Works with all other options except `-html-report`:
+
+    $ ai-expenses -days 14 -group week -total
+    2026-11-09 0.0234
+    2026-11-16 1.8813
+    Total: 1.9047
+
+With `-group month` days are summed by calendar months, each line is `YYYY-MM cost`, the first and the last months can be partial too:
+
+    $ ai-expenses -days 60 -group month -total
+    2026-09 0.4120
+    2026-10 3.1500
+    2026-11 1.9047
+    Total: 5.4667
 
 With `-by-model` each day (and `Total:`) is followed by its models sorted by cost, with `-verbose` requests and tokens columns are added:
 

@@ -174,6 +174,99 @@ Total:         3.7500        15          1120            112
 	}
 }
 
+func TestWeekStart(t *testing.T) {
+	tests := map[string]string{
+		"2026-11-16": "2026-11-16", // Mo
+		"2026-11-19": "2026-11-16",
+		"2026-11-22": "2026-11-16", // Su
+		"2026-11-23": "2026-11-23",
+		"2026-01-01": "2025-12-29", // week across years
+		"bad-date":   "bad-date",
+	}
+	for date, want := range tests {
+		if got := weekStart(date); got != want {
+			t.Errorf("weekStart(%q) = %q, want %q", date, got, want)
+		}
+	}
+}
+
+func TestGroupByWeek(t *testing.T) {
+	// 2026-11-21 Sa - 2026-11-24 Tu: 2 days in each week
+	r := newReport("test", time.Date(2026, 11, 21, 0, 0, 0, 0, time.UTC), 4)
+	r.HasRequests, r.HasTokens = true, true
+	r.add("2026-11-21", "model-a", Stats{Cost: 1.5, Requests: 10, InputTokens: 1000, OutputTokens: 100})
+	r.add("2026-11-22", "model-b", Stats{Cost: 0.25, Requests: 2, InputTokens: 50, OutputTokens: 5})
+	r.add("2026-11-23", "model-b", Stats{Cost: 2, Requests: 3, InputTokens: 70, OutputTokens: 7})
+	weekly := r.groupBy("week")
+
+	if len(r.Days) != 4 || r.Group != "" {
+		t.Errorf("original report is changed: %v", r.Days)
+	}
+
+	var out strings.Builder
+	printReport(&out, weekly, true, true, true, false)
+	want := `date          cost  requests  input_tokens  output_tokens
+2026-11-16  1.7500        12          1050            105
+  model-a   1.5000        10          1000            100
+  model-b   0.2500         2            50              5
+2026-11-23  2.0000         3            70              7
+  model-b   2.0000         3            70              7
+Total:      3.7500        15          1120            112
+  model-b   2.2500         5           120             12
+  model-a   1.5000        10          1000            100
+`
+	if out.String() != want {
+		t.Errorf("got:\n%s\nwant:\n%s", out.String(), want)
+	}
+
+	out.Reset()
+	printColumns(&out, []*Report{weekly}, false, false, false)
+	want = `date       ┊ test
+┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈
+2026-11-16 ┊ 1.7500
+2026-11-23 ┊ 2.0000
+`
+	if out.String() != want {
+		t.Errorf("got:\n%s\nwant:\n%s", out.String(), want)
+	}
+}
+
+func TestMonthOf(t *testing.T) {
+	tests := map[string]string{
+		"2026-11-01": "2026-11",
+		"2026-11-30": "2026-11",
+		"2026-12-01": "2026-12",
+		"bad-date":   "bad-date",
+	}
+	for date, want := range tests {
+		if got := monthOf(date); got != want {
+			t.Errorf("monthOf(%q) = %q, want %q", date, got, want)
+		}
+	}
+}
+
+func TestGroupByMonth(t *testing.T) {
+	// 2026-11-29 Su - 2026-12-02 We: 2 days in each month
+	r := newReport("test", time.Date(2026, 11, 29, 0, 0, 0, 0, time.UTC), 4)
+	r.add("2026-11-29", "", Stats{Cost: 1.5})
+	r.add("2026-11-30", "", Stats{Cost: 0.25})
+	r.add("2026-12-01", "", Stats{Cost: 2})
+
+	var out strings.Builder
+	printReport(&out, r.groupBy("month"), false, false, true, false)
+	want := `2026-11 1.7500
+2026-12 2.0000
+Total: 3.7500
+`
+	if out.String() != want {
+		t.Errorf("got:\n%s\nwant:\n%s", out.String(), want)
+	}
+
+	if got := r.groupBy("day"); got != r {
+		t.Errorf("groupBy(day) returned new report")
+	}
+}
+
 func TestPrintReportNoModelRequests(t *testing.T) {
 	r := newReport("gemini", time.Date(2026, 11, 20, 0, 0, 0, 0, time.UTC), 1)
 	r.HasRequests, r.HasTokens, r.NoModelRequests = true, true, true
